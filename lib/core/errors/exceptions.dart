@@ -155,15 +155,8 @@ Never handleDioException(DioException e) {
       final statusCode = e.response?.statusCode;
       switch (statusCode) {
         case 401:
-          final rawMsg = extractMessage();
-          final isCredentialsError =
-              rawMsg.toLowerCase().contains('invalid cred') ||
-              rawMsg.toLowerCase().contains('unauthorized');
-
           throw UnauthorizedException(
-            message: isCredentialsError
-                ? 'Incorrect email or password. Please try again.'
-                : rawMsg,
+            message: 'Incorrect email or password. Please try again.',
           );
         case 403:
           throw ForbiddenException(message: extractMessage());

@@ -50,9 +50,10 @@ void main() {
       const LoginSuccess('Logged in successfully'),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.login(tParams);
+    await expectation;
   });
 
   test('emits [LoginLoading, LoginFailure] when login fails', () async {
@@ -63,9 +64,10 @@ void main() {
       const LoginFailure('Invalid credentials'),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.login(tParams);
+    await expectation;
   });
 
   test('emits [LoginLoading, LoginFailure] with errors map when ValidationFailure occurs', () async {
@@ -84,8 +86,9 @@ void main() {
       ),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.login(tParams);
+    await expectation;
   });
 }

@@ -14,10 +14,7 @@ import '../cubit/sign_up_state.dart';
 class SignUpForm extends StatefulWidget {
   final TextEditingController? emailController;
 
-  const SignUpForm({
-    super.key,
-    this.emailController,
-  });
+  const SignUpForm({super.key, this.emailController});
 
   @override
   State<SignUpForm> createState() => _SignUpFormState();
@@ -84,17 +81,25 @@ class _SignUpFormState extends State<SignUpForm> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      final cleanPhone = _phoneController.text.trim().replaceAll(RegExp(r'[\s()-]'), '');
+      final cleanPhone = _phoneController.text.trim().replaceAll(
+        RegExp(r'[\s()-]'),
+        '',
+      );
       context.read<SignUpCubit>().signUp(
-            SignUpParams(
-              username: _usernameController.text.trim(),
-              email: _emailController.text.trim(),
-              phoneNumber: '$_countryCode$cleanPhone',
-              birthDate: _selectedBirthDate ?? DateTime.tryParse(_dobController.text) ?? DateTime(2000, 1, 1),
-              password: _passwordController.text,
-              confirmPassword: _confirmPasswordController.text,
-            ),
-          );
+        SignUpParams(
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          phoneNumber: cleanPhone.startsWith('+')
+              ? cleanPhone
+              : '$_countryCode$cleanPhone',
+          birthDate:
+              _selectedBirthDate ??
+              DateTime.tryParse(_dobController.text) ??
+              DateTime(2000, 1, 1),
+          password: _passwordController.text,
+          confirmPassword: _confirmPasswordController.text,
+        ),
+      );
     }
   }
 
@@ -162,10 +167,7 @@ class _SignUpFormState extends State<SignUpForm> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(width: 12.w),
-                Text(
-                  '🇺🇸',
-                  style: TextStyle(fontSize: 16.sp),
-                ),
+                Text('🇺🇸', style: TextStyle(fontSize: 16.sp)),
                 SizedBox(width: AppConstants.spaceXS.w),
                 Text(
                   '+1',
@@ -204,7 +206,8 @@ class _SignUpFormState extends State<SignUpForm> {
               color: colorScheme.secondary,
               size: 18.w,
             ),
-            validator: (val) => Validators.required(val, fieldName: 'Date of Birth'),
+            validator: (val) =>
+                Validators.required(val, fieldName: 'Date of Birth'),
           ),
           SizedBox(height: 14.h),
 
@@ -259,10 +262,13 @@ class _SignUpFormState extends State<SignUpForm> {
                 size: AppConstants.controlSize.w,
               ),
               onPressed: () {
-                setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                );
               },
             ),
-            validator: (val) => Validators.confirmPassword(val, _passwordController.text),
+            validator: (val) =>
+                Validators.confirmPassword(val, _passwordController.text),
           ),
           SizedBox(height: 6.h),
 

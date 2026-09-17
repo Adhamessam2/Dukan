@@ -54,9 +54,10 @@ void main() {
       const SignUpSuccess('Email sent successfully'),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.signUp(tParams);
+    await expectation;
   });
 
   test('emits [SignUpLoading, SignUpFailure] when signUp fails', () async {
@@ -67,9 +68,10 @@ void main() {
       const SignUpFailure('Error occurred'),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.signUp(tParams);
+    await expectation;
   });
 
   test('emits [SignUpLoading, SignUpFailure] with errors map when ValidationFailure occurs', () async {
@@ -88,8 +90,9 @@ void main() {
       ),
     ];
 
-    expectLater(cubit.stream, emitsInOrder(expectedStates));
+    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
 
     await cubit.signUp(tParams);
+    await expectation;
   });
 }
