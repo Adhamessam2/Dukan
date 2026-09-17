@@ -53,7 +53,8 @@ class AppConstants {
   static const double radiusDefault = 8.0; // 0.5rem
   static const double radiusMD = 12.0; // 0.75rem (rounded-xl: buttons, inputs)
   static const double radiusLG = 16.0; // 1.0rem (rounded-2xl: product cards)
-  static const double radiusXL = 24.0; // 1.5rem (rounded-3xl: modal sheets, containers)
+  static const double radiusXL =
+      24.0; // 1.5rem (rounded-3xl: modal sheets, containers)
   static const double radiusFull = 9999.0;
   static const double radiusRound = 9999.0;
 

@@ -8,8 +8,10 @@ abstract class Failure extends Equatable {
 
   const Failure({required this.message, this.code});
 
+  Map<String, dynamic>? get errors => null;
+
   @override
-  List<Object?> get props => [message, code];
+  List<Object?> get props => [message, code, errors];
 }
 
 /// Server Failure
@@ -30,6 +32,17 @@ class NetworkFailure extends Failure {
   const NetworkFailure({
     super.message = 'No internet connection. Please check your network.',
   });
+}
+
+class CancelledFailure extends Failure {
+  const CancelledFailure({super.message = 'Request cancelled.'});
+}
+
+/// The response body couldn't be parsed into the expected shape
+/// (e.g. malformed/unexpected JSON). Distinct from a server error —
+/// the request succeeded, but decoding it failed.
+class ParseFailure extends Failure {
+  const ParseFailure({super.message = 'Failed to parse response data.'});
 }
 
 /// Unauthorized Failure
@@ -62,6 +75,7 @@ class NotFoundFailure extends Failure {
 /// Validation Failure
 /// Represents validation errors
 class ValidationFailure extends Failure {
+  @override
   final Map<String, dynamic>? errors;
 
   const ValidationFailure({

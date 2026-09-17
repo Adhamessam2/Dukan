@@ -14,6 +14,6 @@ class AppConfig {
   static String get baseUrl {
     return isProduction
         ? 'https://api.production.com'
-        : 'https://api.development.com';
+        : 'http://10.0.2.2:3000/api/v1';
   }
 }

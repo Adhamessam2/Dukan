@@ -5,6 +5,7 @@ import '../utils/constants.dart';
 /// A refined input field conforming to "Warm Architectural Minimalism".
 class CustomTextField extends StatelessWidget {
   final String? label;
+  final Widget? labelWidget;
   final String? hint;
   final TextEditingController? controller;
   final bool obscureText;
@@ -12,16 +13,21 @@ class CustomTextField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final BoxConstraints? prefixIconConstraints;
+  final BoxConstraints? suffixIconConstraints;
   final int maxLines;
   final bool enabled;
   final bool readOnly;
   final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
+  final AutovalidateMode? autovalidateMode;
+  final TextInputAction? textInputAction;
 
   const CustomTextField({
     super.key,
     this.label,
+    this.labelWidget,
     this.hint,
     this.controller,
     this.obscureText = false,
@@ -29,12 +35,16 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.prefixIcon,
     this.suffixIcon,
+    this.prefixIconConstraints,
+    this.suffixIconConstraints,
     this.maxLines = 1,
     this.enabled = true,
     this.readOnly = false,
     this.focusNode,
     this.onChanged,
     this.onTap,
+    this.autovalidateMode,
+    this.textInputAction,
   });
 
   @override
@@ -46,7 +56,10 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (label != null) ...[
+        if (labelWidget != null) ...[
+          labelWidget!,
+          const SizedBox(height: AppConstants.spaceSM),
+        ] else if (label != null) ...[
           Text(
             label!,
             style: AppTypography.labelSm.copyWith(
@@ -67,6 +80,8 @@ class CustomTextField extends StatelessWidget {
           readOnly: readOnly,
           onChanged: onChanged,
           onTap: onTap,
+          autovalidateMode: autovalidateMode,
+          textInputAction: textInputAction,
           style: AppTypography.bodyMd.copyWith(
             color: colorScheme.onSurface,
           ),
@@ -76,7 +91,9 @@ class CustomTextField extends StatelessWidget {
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
             ),
             prefixIcon: prefixIcon,
+            prefixIconConstraints: prefixIconConstraints,
             suffixIcon: suffixIcon,
+            suffixIconConstraints: suffixIconConstraints,
             filled: true,
             fillColor: colorScheme.surfaceContainerLow,
             contentPadding: const EdgeInsets.symmetric(
@@ -85,11 +102,17 @@ class CustomTextField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-              borderSide: const BorderSide(color: Colors.transparent, width: 1),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+                width: AppConstants.hairlineStrokeWidth,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-              borderSide: const BorderSide(color: Colors.transparent, width: 1),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+                width: AppConstants.hairlineStrokeWidth,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMD),
@@ -114,7 +137,10 @@ class CustomTextField extends StatelessWidget {
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-              borderSide: const BorderSide(color: Colors.transparent, width: 1),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+                width: AppConstants.hairlineStrokeWidth,
+              ),
             ),
           ),
         ),

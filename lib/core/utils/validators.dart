@@ -1,3 +1,5 @@
+import 'constants.dart';
+
 /// Form Validators
 /// Provides validation functions for common form fields
 class Validators {
@@ -18,11 +20,7 @@ class Validators {
       return 'Email is required';
     }
 
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-
-    if (!emailRegex.hasMatch(value)) {
+    if (!AppConstants.emailRegex.hasMatch(value)) {
       return 'Please enter a valid email address';
     }
 
@@ -30,7 +28,7 @@ class Validators {
   }
 
   /// Validates password strength
-  static String? password(String? value, {int minLength = 8}) {
+  static String? password(String? value, {int minLength = AppConstants.minPasswordLength}) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
@@ -77,9 +75,7 @@ class Validators {
       return 'Phone number is required';
     }
 
-    final phoneRegex = RegExp(r'^\+?[0-9]{10,15}$');
-
-    if (!phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s-]'), ''))) {
+    if (!AppConstants.phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s()-]'), ''))) {
       return 'Please enter a valid phone number';
     }
 
@@ -131,11 +127,7 @@ class Validators {
       return 'URL is required';
     }
 
-    final urlRegex = RegExp(
-      r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
-    );
-
-    if (!urlRegex.hasMatch(value)) {
+    if (!AppConstants.urlRegex.hasMatch(value)) {
       return 'Please enter a valid URL';
     }
 
