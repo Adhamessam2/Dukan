@@ -1,4 +1,6 @@
+import 'package:Dukan/core/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// String Extensions
 extension StringExtension on String {
@@ -78,7 +80,14 @@ extension ContextExtension on BuildContext {
     SnackBarAction? action,
   }) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(content: Text(message), duration: duration, action: action),
+      SnackBar(
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        behavior: SnackBarBehavior.floating,
+        duration: duration,
+        action: action,
+        padding: EdgeInsets.all(AppConstants.radiusMD.r),
+        margin: EdgeInsets.all(AppConstants.margin),
+      ),
     );
   }
 
@@ -86,9 +95,12 @@ extension ContextExtension on BuildContext {
   void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: colorScheme.error,
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
         duration: const Duration(seconds: 4),
+        padding: EdgeInsets.all(AppConstants.radiusMD.r),
+        margin: EdgeInsets.all(AppConstants.margin),
       ),
     );
   }
@@ -97,9 +109,12 @@ extension ContextExtension on BuildContext {
   void showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: TextStyle(color: Colors.white)),
+        behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),
+        padding: EdgeInsets.all(AppConstants.radiusMD.r),
+        margin: EdgeInsets.all(AppConstants.margin),
       ),
     );
   }

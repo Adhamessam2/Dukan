@@ -19,21 +19,33 @@ This document defines the review guidelines for the **`code_reviewer`** subagent
 3. **Performance & UI Audit**:
    - Check usage of `const` constructors to prevent unnecessary widget rebuilds.
    - Ensure localized and isolated rebuild trees using `BlocSelector` / `BlocBuilder` at the lowest possible leaf node.
+   - **Zero Keystroke Dirty Rebuilds**: Ensure no `TextEditingController` listeners trigger `setState` on user typing.
+   - **GPU Compositor Safety**: Prohibit `BackdropFilter` or `ImageFilter.blur` for ambient glows or shadows where vector `BoxShadow` or gradients achieve the effect with zero GPU `saveLayer` overhead.
+   - **Redundant Animation Hierarchy**: Flag redundant layout animators (e.g. `AnimatedSize` wrapping `AnimatedCrossFade`).
+   - **Repaint Isolation**: Ensure complex static UI subtrees (such as brand mascot headers) in scrollable views are isolated with `const RepaintBoundary`.
    - Verify `ScreenUtil` responsive dimensions (`.w`, `.h`, `.sp`, `.r`).
    - Check ListView/GridView builders for large lists to prevent memory spikes.
 
-4. **Dependency Injection & Routing**:
-   - Verify `get_it` registration in `lib/core/di/service_locator.dart`.
+4. **Theme Conformance Audit**:
+   - Verify that presentation widgets strictly depend on `Theme.of(context).colorScheme` and `Theme.of(context).textTheme`.
+   - Flag and reject direct usages of `AppColors.*` in presentation widgets unless the color is strictly mode-invariant (e.g. static brand assets, pure transparency).
+
+5. **Design System & AppConstants Audit**:
+   - Reject magic numbers and raw literals across layout and utilities.
+   - Verify all spacings/paddings (`AppConstants.space*`, `margin`), border radii (`AppConstants.radius*`), component/control sizes (`AppConstants.buttonHeight`, `controlSize`, `iconSize*`), stroke widths (`AppConstants.hairlineStrokeWidth`), animation durations (`AppConstants.*AnimationDuration`), regex patterns (`AppConstants.*Regex`), and validation limits (`AppConstants.min*Length`) are sourced strictly from `AppConstants`.
+
+6. **Dependency Injection & Routing**:
+   - Verify `get_it` registration in `lib/core/di/service_locator.dart` (or `injection_container.dart`).
    - Verify route definitions in `lib/core/routes/app_router.dart`.
 
-5. **Static Analysis & Linting**:
+7. **Static Analysis & Linting**:
    - Execute analysis checks:
      ```bash
      flutter analyze
      dart format --output=none --set-exit-if-changed .
      ```
 
-6. **Anti-Over-Engineering & DRY Audit**:
+8. **Anti-Over-Engineering & DRY Audit**:
    - Verify domain entities are not duplicated across features (e.g. unified `ProductEntity`).
    - Check for unnecessary adapter extensions/mappers between identical models.
    - Ensure all networking uses `Dio` / `ApiConsumer` exclusively; reject secondary HTTP packages (`http.Client`).

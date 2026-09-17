@@ -22,7 +22,7 @@ class DioConsumer implements ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Server Error');
+      handleDioException(e);
     }
   }
 
@@ -42,7 +42,7 @@ class DioConsumer implements ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Server Error');
+      handleDioException(e);
     }
   }
 
@@ -62,7 +62,7 @@ class DioConsumer implements ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Server Error');
+      handleDioException(e);
     }
   }
 
@@ -80,7 +80,7 @@ class DioConsumer implements ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Server Error');
+      handleDioException(e);
     }
   }
 
@@ -100,7 +100,7 @@ class DioConsumer implements ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Server Error');
+      handleDioException(e);
     }
   }
 }

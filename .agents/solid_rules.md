@@ -52,14 +52,24 @@ This document specifies the exact protocol used by the **`code_reviewer`** subag
    - Register Cubits as `Factory` in `GetIt` (`sl.registerFactory(() => FeatureCubit(...))`).
    - **Granular Rebuild Scope**: NEVER wrap the entire screen or large layout subtrees in `BlocConsumer` or `BlocBuilder`. Separate side effects into top-level `BlocListener` and isolate state rebuilds strictly to target widgets (e.g., action buttons, input fields) using `BlocSelector` or scoped `BlocBuilder`.
 
-3. **Singleton Safety**:
+3. **Theme & Design System Tokens Protocol**:
+   - **Theme Exclusivity**: Presentation widgets must strictly use `Theme.of(context).colorScheme` and `Theme.of(context).textTheme`. Direct references to `AppColors` are forbidden for dynamic colors; `AppColors` is reserved exclusively for theme-invariant tokens (e.g. constant brand graphics or transparent accents).
+   - **Strict AppConstants Compliance**: All spacings, paddings, margins, border radii, component dimensions, control sizes, stroke widths, animation durations, regex patterns, and validation boundaries must be sourced from `AppConstants.*`. Magic literals are strictly prohibited.
+
+4. **Rendering & Rebuild Performance Protocol**:
+   - **Zero Keystroke Dirty Rebuilds**: Never attach `TextEditingController.addListener` to invoke `setState`. Delegate text editing and live cursor handling to `RenderEditable` and form validation to `FormFieldState`.
+   - **GPU Compositor Safety**: Prohibit `BackdropFilter` or `ImageFilter.blur` when achieving simple glows, blurs, or shadows. Use vector `BoxShadow` or radial gradients to eliminate offscreen raster buffer allocations (`saveLayer`) during scroll interactions.
+   - **No Redundant Layout Animators**: Never wrap self-sizing widgets (like `AnimatedCrossFade`) in outer `AnimatedSize` widgets.
+   - **Repaint Isolation**: Wrap complex, static vector/mascot headers in `const RepaintBoundary` to prevent canvas invalidation during scrolling or keyboard transitions.
+
+5. **Singleton Safety**:
    - Avoid `static late` singleton instances (`static late SharedPreferences sharedPreferences`). Register as `LazySingleton` or `Singleton` in `get_it`.
 
-4. **Static Analysis & Deprecations**:
+6. **Static Analysis & Deprecations**:
    - Ensure clean `flutter analyze` run.
    - Replace Flutter deprecations (`ColorScheme.background`, `.withOpacity()`).
 
-5. **Anti-Over-Engineering, DRY & YAGNI**:
+7. **Anti-Over-Engineering, DRY & YAGNI**:
    - **No Duplicate Entities**: Core domain models (e.g. `ProductEntity`) must never be duplicated across features. Use shared domain entities and avoid writing artificial entity mappers (`Product.toCatalogProduct()`).
    - **Unified HTTP Client**: All network operations must route through the central `ApiConsumer` / `Dio` instance. Never add or use secondary HTTP libraries (`package:http`) for isolated services.
    - **No Micro-Widget Over-Abstraction**: Do not create single-use 1-line wrapper widgets that only wrap core widgets (like `CustomButton`) with hardcoded text/icons. Use core widgets directly with appropriate arguments.

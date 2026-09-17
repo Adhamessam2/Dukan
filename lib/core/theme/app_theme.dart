@@ -290,6 +290,14 @@ class AppTheme {
         thickness: AppConstants.hairlineStrokeWidth,
         space: AppConstants.hairlineStrokeWidth,
       ),
+
+      // SnackBar Theme (floating, rounded)
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMD),
+        ),
+      ),
     );
   }
 }
