@@ -247,4 +247,26 @@ void main() {
 
     expect(find.text('Failed to load catalog'), findsOneWidget);
   });
+
+  testWidgets('Tapping sort button opens sort options bottom sheet', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    mockGetCategoriesUseCase.resultToReturn = const Right([]);
+    mockGetProductsUseCase.resultToReturn = const Right([]);
+
+    await tester.pumpWidget(buildTestWidget());
+    await cubit.loadHomeData();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sort by: Curated'), findsOneWidget);
+    await tester.tap(find.text('Sort by: Curated'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sort Products'), findsOneWidget);
+    expect(find.text('Price: Low to High'), findsOneWidget);
+    expect(find.text('Price: High to Low'), findsOneWidget);
+    expect(find.text('Top Rated'), findsOneWidget);
+  });
 }

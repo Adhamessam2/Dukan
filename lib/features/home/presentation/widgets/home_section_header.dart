@@ -64,34 +64,35 @@ class HomeSectionHeader extends StatelessWidget {
           SizedBox(width: AppConstants.spacingSM.w),
 
           // Sort Button
-          InkWell(
-            onTap: onSortTap,
-            borderRadius: BorderRadius.circular(AppConstants.radiusDefault),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppConstants.spacingSM.w,
-                vertical: AppConstants.spacingXS.h,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.swap_vert_rounded,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 16.r,
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'Sort by: Curated',
-                    style: TextStyle(
+          if (onSortTap != null)
+            InkWell(
+              onTap: onSortTap,
+              borderRadius: BorderRadius.circular(AppConstants.radiusDefault),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingSM.w,
+                  vertical: AppConstants.spacingXS.h,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.swap_vert_rounded,
                       color: colorScheme.onSurfaceVariant,
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
+                      size: 16.r,
                     ),
-                  ),
-                ],
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Sort by: Curated',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
