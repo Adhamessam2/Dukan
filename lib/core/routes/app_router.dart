@@ -6,8 +6,11 @@ import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/sign_up_cubit.dart';
 import '../../features/auth/presentation/views/auth_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/home/domain/entities/product_entity.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/views/home_screen.dart';
+import '../../features/product_details/presentation/cubit/product_details_cubit.dart';
+import '../../features/product_details/presentation/views/product_details_screen.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
@@ -31,6 +34,18 @@ final GoRouter router = GoRouter(
         create: (_) => sl<HomeCubit>()..loadHomeData(),
         child: const HomeScreen(),
       ),
+    ),
+    GoRoute(
+      path: Routes.productDetails,
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        final initialProduct = state.extra as ProductEntity?;
+        return BlocProvider<ProductDetailsCubit>(
+          create: (_) => sl<ProductDetailsCubit>()
+            ..loadProductDetails(id, initialProduct: initialProduct),
+          child: const ProductDetailsScreen(),
+        );
+      },
     ),
   ],
 );

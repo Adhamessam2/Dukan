@@ -50,6 +50,9 @@ class ProductEntity extends Equatable {
     return productImages.firstOrNull;
   }
 
+  /// Returns true if stockQuantity is greater than 0
+  bool get isInStock => stockQuantity > 0;
+
   /// Returns the URL string of the primary image, if present
   String? get primaryImageUrl => primaryImage?.url;
 }

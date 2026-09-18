@@ -74,18 +74,4 @@ class HomeRepositoryImpl implements HomeRepository {
       return Left(mapExceptionToFailure(e));
     }
   }
-
-  @override
-  Future<Either<Failure, ProductEntity>> getProductById(int id) async {
-    if (!await networkInfo.isConnected) {
-      return const Left(NetworkFailure());
-    }
-
-    try {
-      final product = await remoteDataSource.getProductById(id);
-      return Right(product);
-    } catch (e) {
-      return Left(mapExceptionToFailure(e));
-    }
-  }
 }

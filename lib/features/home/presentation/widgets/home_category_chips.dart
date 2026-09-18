@@ -15,13 +15,13 @@ class HomeCategoryChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocSelector<HomeCubit, HomeState,
-        (List<CategoryEntity>, int?, HomeStatus)>(
-      selector: (state) => (
-        state.categories,
-        state.selectedCategoryId,
-        state.categoriesStatus,
-      ),
+    return BlocSelector<
+      HomeCubit,
+      HomeState,
+      (List<CategoryEntity>, int?, HomeStatus)
+    >(
+      selector: (state) =>
+          (state.categories, state.selectedCategoryId, state.categoriesStatus),
       builder: (context, data) {
         final (categories, selectedCategoryId, status) = data;
 
@@ -43,7 +43,9 @@ class HomeCategoryChips extends StatelessWidget {
                   ? selectedCategoryId == null
                   : categories[index - 1].id == selectedCategoryId;
 
-              final title = isAllChip ? 'All' : categories[index - 1].categoryName;
+              final title = isAllChip
+                  ? 'All'
+                  : categories[index - 1].categoryName;
               final categoryId = isAllChip ? null : categories[index - 1].id;
 
               return InkWell(
@@ -61,7 +63,9 @@ class HomeCategoryChips extends StatelessWidget {
                     color: isSelected
                         ? colorScheme.inverseSurface
                         : colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(AppConstants.radiusRound),
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.radiusRound,
+                    ),
                     boxShadow: isSelected ? AppConstants.elevationLevel2 : null,
                   ),
                   alignment: Alignment.center,
@@ -72,7 +76,9 @@ class HomeCategoryChips extends StatelessWidget {
                           ? colorScheme.onInverseSurface
                           : colorScheme.secondary,
                       fontSize: 12.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),

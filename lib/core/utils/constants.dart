@@ -65,6 +65,7 @@ class AppConstants {
   static const double inputHeight = 48.0;
   static const double chipHeight = 36.0;
   static const double stepperHeight = 36.0;
+  static const double productHeroHeight = 200.0;
   static const double hairlineStrokeWidth = 1.0;
   static const double controlSize = 20.0;
 
@@ -141,6 +142,7 @@ class AppConstants {
   static final RegExp urlRegex = RegExp(
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
   );
+  static final RegExp htmlBoldRegex = RegExp(r'<b>(.*?)<\/b>|([^<]+)');
 
   // Error Messages
   static const String genericErrorMessage =

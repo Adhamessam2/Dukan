@@ -40,14 +40,6 @@ class MockHomeRemoteDataSource implements HomeRemoteDataSource {
     }
     return singleCategoryToReturn!;
   }
-
-  @override
-  Future<ProductModel> getProductById(int id) async {
-    if (singleProductExceptionToThrow != null) {
-      throw singleProductExceptionToThrow!;
-    }
-    return singleProductToReturn!;
-  }
 }
 
 class MockNetworkInfo implements NetworkInfo {
@@ -280,50 +272,4 @@ void main() {
     );
   });
 
-  group('getProductById', () {
-    const tProductId = 10;
-    const tProductModel = ProductModel(
-      id: tProductId,
-      productName: 'iPhone 14',
-      price: 999.0,
-    );
-
-    test('should return NetworkFailure when device is offline', () async {
-      mockNetworkInfo.isConnectedValue = false;
-
-      final result = await repository.getProductById(tProductId);
-
-      expect(result, const Left(NetworkFailure()));
-    });
-
-    test(
-      'should return ProductEntity when remoteDataSource returns successfully',
-      () async {
-        mockNetworkInfo.isConnectedValue = true;
-        mockRemoteDataSource.singleProductToReturn = tProductModel;
-
-        final result = await repository.getProductById(tProductId);
-
-        expect(result, const Right(tProductModel));
-      },
-    );
-
-    test(
-      'should return ServerFailure when remoteDataSource throws ServerException',
-      () async {
-        mockNetworkInfo.isConnectedValue = true;
-        mockRemoteDataSource.singleProductExceptionToThrow = ServerException(
-          message: 'Product not found',
-          statusCode: 404,
-        );
-
-        final result = await repository.getProductById(tProductId);
-
-        expect(
-          result,
-          const Left(ServerFailure(message: 'Product not found', code: 404)),
-        );
-      },
-    );
-  });
 }

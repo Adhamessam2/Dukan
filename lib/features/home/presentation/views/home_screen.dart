@@ -2,6 +2,8 @@ import 'package:Dukan/core/utils/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routes/routes.dart';
 import '../../../../core/utils/constants.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
@@ -24,6 +26,77 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
+
+  void _showSortOptions(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppConstants.radiusLG.r),
+        ),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppConstants.margin.w,
+              vertical: AppConstants.spacingMD.h,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusRound,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppConstants.spacingMD.h),
+                Text(
+                  'Sort Products',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: AppConstants.spacingSM.h),
+                ListTile(
+                  leading: const Icon(Icons.auto_awesome_rounded),
+                  title: const Text('Curated'),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.arrow_upward_rounded),
+                  title: const Text('Price: Low to High'),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.arrow_downward_rounded),
+                  title: const Text('Price: High to Low'),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.star_rounded),
+                  title: const Text('Top Rated'),
+                  onTap: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +150,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   const HomeSpotlightBanner(),
 
                   // Featured Products Section Header
-                  const HomeSectionHeader(),
+                  HomeSectionHeader(
+                    onSortTap: () => _showSortOptions(context),
+                  ),
 
                   SizedBox(height: AppConstants.spacingSM.h),
 
                   // 2-Column Responsive Products Grid
                   HomeProductsGrid(
+                    onProductTap: (product) {
+                      context.push(
+                        Routes.productDetailsPath(product.id),
+                        extra: product,
+                      );
+                    },
                     onAddToCart: (product) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(

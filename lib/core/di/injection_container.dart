@@ -24,9 +24,13 @@ import '../../features/home/data/repositories/home_repository_impl.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/domain/usecases/get_categories_use_case.dart';
 import '../../features/home/domain/usecases/get_category_by_id_use_case.dart';
-import '../../features/home/domain/usecases/get_product_by_id_use_case.dart';
 import '../../features/home/domain/usecases/get_products_use_case.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
+import '../../features/product_details/data/datasources/product_details_remote_data_source.dart';
+import '../../features/product_details/data/repositories/product_details_repository_impl.dart';
+import '../../features/product_details/domain/repositories/product_details_repository.dart';
+import '../../features/product_details/domain/usecases/get_product_by_id_use_case.dart';
+import '../../features/product_details/presentation/cubit/product_details_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -114,13 +118,25 @@ Future<void> init() async {
   sl.registerLazySingleton<GetCategoryByIdUseCase>(
     () => GetCategoryByIdUseCase(sl()),
   );
-  sl.registerLazySingleton<GetProductByIdUseCase>(
-    () => GetProductByIdUseCase(sl()),
-  );
   sl.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   sl.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(apiConsumer: sl()),
+  );
+
+  //! Features - Product Details
+  sl.registerFactory<ProductDetailsCubit>(
+    () => ProductDetailsCubit(getProductByIdUseCase: sl()),
+  );
+  sl.registerLazySingleton<GetProductByIdUseCase>(
+    () => GetProductByIdUseCase(sl()),
+  );
+  sl.registerLazySingleton<ProductDetailsRepository>(
+    () =>
+        ProductDetailsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<ProductDetailsRemoteDataSource>(
+    () => ProductDetailsRemoteDataSourceImpl(apiConsumer: sl()),
   );
 }
