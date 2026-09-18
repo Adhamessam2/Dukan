@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:Dukan/features/auth/presentation/widgets/auth_segmented_switcher.dart';
 
 void main() {
-  testWidgets('AuthSegmentedSwitcher renders both tabs and responds to taps', (tester) async {
+  testWidgets('AuthSegmentedSwitcher renders both tabs and responds to taps', (
+    tester,
+  ) async {
     int currentTab = 0;
     await tester.pumpWidget(
       ScreenUtilInit(

@@ -156,23 +156,31 @@ class AppTypography {
         labelSmall: labelSm,
       );
     }
-    return baseTheme.apply(bodyColor: color, displayColor: color).copyWith(
-      displayLarge: displayLg.copyWith(color: color),
-      displayMedium: displayLgMobile.copyWith(color: color),
-      displaySmall: headlineLg.copyWith(color: color),
-      headlineLarge: headlineLg.copyWith(color: color),
-      headlineMedium: headlineMd.copyWith(color: color),
-      headlineSmall: headlineSm.copyWith(color: color),
-      titleLarge: headlineSm.copyWith(color: color),
-      titleMedium: bodyLg.copyWith(color: color, fontWeight: FontWeight.w600),
-      titleSmall: bodyMd.copyWith(color: color, fontWeight: FontWeight.w600),
-      bodyLarge: bodyLg.copyWith(color: color),
-      bodyMedium: bodyMd.copyWith(color: color),
-      bodySmall: bodySm.copyWith(color: color),
-      labelLarge: labelLg.copyWith(color: color),
-      labelMedium: labelMd.copyWith(color: color),
-      labelSmall: labelSm.copyWith(color: color),
-    );
+    return baseTheme
+        .apply(bodyColor: color, displayColor: color)
+        .copyWith(
+          displayLarge: displayLg.copyWith(color: color),
+          displayMedium: displayLgMobile.copyWith(color: color),
+          displaySmall: headlineLg.copyWith(color: color),
+          headlineLarge: headlineLg.copyWith(color: color),
+          headlineMedium: headlineMd.copyWith(color: color),
+          headlineSmall: headlineSm.copyWith(color: color),
+          titleLarge: headlineSm.copyWith(color: color),
+          titleMedium: bodyLg.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+          titleSmall: bodyMd.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+          bodyLarge: bodyLg.copyWith(color: color),
+          bodyMedium: bodyMd.copyWith(color: color),
+          bodySmall: bodySm.copyWith(color: color),
+          labelLarge: labelLg.copyWith(color: color),
+          labelMedium: labelMd.copyWith(color: color),
+          labelSmall: labelSm.copyWith(color: color),
+        );
   }
 }
 

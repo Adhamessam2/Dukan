@@ -12,10 +12,12 @@ class MockAuthRepository implements AuthRepository {
   Either<Failure, String>? loginResult;
 
   @override
-  Future<Either<Failure, String>> login(LoginParams params) async => loginResult!;
+  Future<Either<Failure, String>> login(LoginParams params) async =>
+      loginResult!;
 
   @override
-  Future<Either<Failure, String>> signUp(SignUpParams params) => throw UnimplementedError();
+  Future<Either<Failure, String>> signUp(SignUpParams params) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -57,7 +59,9 @@ void main() {
   });
 
   test('emits [LoginLoading, LoginFailure] when login fails', () async {
-    mockRepository.loginResult = const Left(ServerFailure(message: 'Invalid credentials'));
+    mockRepository.loginResult = const Left(
+      ServerFailure(message: 'Invalid credentials'),
+    );
 
     final expectedStates = [
       const LoginLoading(),
@@ -70,25 +74,31 @@ void main() {
     await expectation;
   });
 
-  test('emits [LoginLoading, LoginFailure] with errors map when ValidationFailure occurs', () async {
-    mockRepository.loginResult = const Left(
-      ValidationFailure(
-        message: 'Validation failed',
-        errors: {'email': 'Invalid email'},
-      ),
-    );
+  test(
+    'emits [LoginLoading, LoginFailure] with errors map when ValidationFailure occurs',
+    () async {
+      mockRepository.loginResult = const Left(
+        ValidationFailure(
+          message: 'Validation failed',
+          errors: {'email': 'Invalid email'},
+        ),
+      );
 
-    final expectedStates = [
-      const LoginLoading(),
-      const LoginFailure(
-        'Validation failed',
-        errors: {'email': 'Invalid email'},
-      ),
-    ];
+      final expectedStates = [
+        const LoginLoading(),
+        const LoginFailure(
+          'Validation failed',
+          errors: {'email': 'Invalid email'},
+        ),
+      ];
 
-    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
+      final expectation = expectLater(
+        cubit.stream,
+        emitsInOrder(expectedStates),
+      );
 
-    await cubit.login(tParams);
-    await expectation;
-  });
+      await cubit.login(tParams);
+      await expectation;
+    },
+  );
 }

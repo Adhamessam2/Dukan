@@ -41,13 +41,14 @@ class SecureStorageServiceImpl implements SecureStorageService {
   final FlutterSecureStorage storage;
 
   SecureStorageServiceImpl({FlutterSecureStorage? storage})
-      : storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(),
-              iOptions: IOSOptions(
-                accessibility: KeychainAccessibility.first_unlock_this_device,
-              ),
-            );
+    : storage =
+          storage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(),
+            iOptions: IOSOptions(
+              accessibility: KeychainAccessibility.first_unlock_this_device,
+            ),
+          );
 
   static const _keyAuthToken = 'auth_token';
   static const _keyRefreshToken = 'refresh_token';

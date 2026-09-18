@@ -15,13 +15,17 @@ import 'package:fpdart/fpdart.dart';
 
 class MockAuthRepo implements AuthRepository {
   @override
-  Future<Either<Failure, String>> login(LoginParams params) async => const Right('OK');
+  Future<Either<Failure, String>> login(LoginParams params) async =>
+      const Right('OK');
   @override
-  Future<Either<Failure, String>> signUp(SignUpParams params) async => const Right('OK');
+  Future<Either<Failure, String>> signUp(SignUpParams params) async =>
+      const Right('OK');
 }
 
 void main() {
-  testWidgets('AuthScreen switches between tabs smoothly without overflow', (tester) async {
+  testWidgets('AuthScreen switches between tabs smoothly without overflow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() => tester.view.resetPhysicalSize());

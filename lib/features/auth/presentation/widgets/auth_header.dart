@@ -76,9 +76,7 @@ class AuthHeader extends StatelessWidget {
         // Subtitle
         Text(
           'Thoughtful everyday essentials',
-          style: AppTypography.bodyMd.copyWith(
-            color: colorScheme.secondary,
-          ),
+          style: AppTypography.bodyMd.copyWith(color: colorScheme.secondary),
           textAlign: TextAlign.center,
         ),
       ],

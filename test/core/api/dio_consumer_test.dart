@@ -27,15 +27,20 @@ class MockDio extends Fake implements Dio {
 }
 
 void main() {
-  test('post should throw ValidationException when status code is 422', () async {
-    final consumer = DioConsumer(client: MockDio());
-    expect(
-      () => consumer.post('/test'),
-      throwsA(isA<ValidationException>().having(
-        (e) => e.message,
-        'message',
-        'Validation failed: Email exists',
-      )),
-    );
-  });
+  test(
+    'post should throw ValidationException when status code is 422',
+    () async {
+      final consumer = DioConsumer(client: MockDio());
+      expect(
+        () => consumer.post('/test'),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.message,
+            'message',
+            'Validation failed: Email exists',
+          ),
+        ),
+      );
+    },
+  );
 }

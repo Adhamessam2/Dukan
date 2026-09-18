@@ -15,7 +15,8 @@ class MockAuthRepository implements AuthRepository {
   Future<Either<Failure, String>> signUp(SignUpParams params) async => result!;
 
   @override
-  Future<Either<Failure, String>> login(LoginParams params) => throw UnimplementedError();
+  Future<Either<Failure, String>> login(LoginParams params) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -61,7 +62,9 @@ void main() {
   });
 
   test('emits [SignUpLoading, SignUpFailure] when signUp fails', () async {
-    mockRepository.result = const Left(ServerFailure(message: 'Error occurred'));
+    mockRepository.result = const Left(
+      ServerFailure(message: 'Error occurred'),
+    );
 
     final expectedStates = [
       const SignUpLoading(),
@@ -74,25 +77,31 @@ void main() {
     await expectation;
   });
 
-  test('emits [SignUpLoading, SignUpFailure] with errors map when ValidationFailure occurs', () async {
-    mockRepository.result = const Left(
-      ValidationFailure(
-        message: 'Validation failed',
-        errors: {'email': 'already taken'},
-      ),
-    );
+  test(
+    'emits [SignUpLoading, SignUpFailure] with errors map when ValidationFailure occurs',
+    () async {
+      mockRepository.result = const Left(
+        ValidationFailure(
+          message: 'Validation failed',
+          errors: {'email': 'already taken'},
+        ),
+      );
 
-    final expectedStates = [
-      const SignUpLoading(),
-      const SignUpFailure(
-        'Validation failed',
-        errors: {'email': 'already taken'},
-      ),
-    ];
+      final expectedStates = [
+        const SignUpLoading(),
+        const SignUpFailure(
+          'Validation failed',
+          errors: {'email': 'already taken'},
+        ),
+      ];
 
-    final expectation = expectLater(cubit.stream, emitsInOrder(expectedStates));
+      final expectation = expectLater(
+        cubit.stream,
+        emitsInOrder(expectedStates),
+      );
 
-    await cubit.signUp(tParams);
-    await expectation;
-  });
+      await cubit.signUp(tParams);
+      await expectation;
+    },
+  );
 }

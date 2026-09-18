@@ -34,10 +34,7 @@ void main() {
       final json = {
         'success': true,
         'statusCode': 201,
-        'data': {
-          'success': true,
-          'message': 'Email sent successfully',
-        },
+        'data': {'success': true, 'message': 'Email sent successfully'},
       };
 
       final model = SignUpResponseModel.fromJson(json);

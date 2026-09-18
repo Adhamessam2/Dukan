@@ -14,10 +14,7 @@ void main() {
       final model = LoginRequestModel.fromEntity(params);
       final json = model.toJson();
 
-      expect(json, {
-        'email': 'user@example.com',
-        'password': 'password123',
-      });
+      expect(json, {'email': 'user@example.com', 'password': 'password123'});
     });
   });
 
@@ -26,9 +23,7 @@ void main() {
       final json = {
         'success': true,
         'statusCode': 201,
-        'data': {
-          'access_token': 'test_token_123',
-        },
+        'data': {'access_token': 'test_token_123'},
       };
 
       final model = LoginResponseModel.fromJson(json);
@@ -42,10 +37,7 @@ void main() {
       final json = {
         'success': true,
         'statusCode': 200,
-        'data': {
-          'access_token': 'test_token_123',
-          'message': 'Welcome back',
-        },
+        'data': {'access_token': 'test_token_123', 'message': 'Welcome back'},
       };
 
       final model = LoginResponseModel.fromJson(json);

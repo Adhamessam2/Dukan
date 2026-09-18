@@ -15,7 +15,8 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> login(LoginParams params) => throw UnimplementedError();
+  Future<Either<Failure, String>> login(LoginParams params) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -36,14 +37,17 @@ void main() {
     phoneNumber: '1234567890',
   );
 
-  test('should return success message from the repository on success', () async {
-    const tSuccessMessage = 'Email sent successfully';
-    mockRepository.resultToReturn = const Right(tSuccessMessage);
+  test(
+    'should return success message from the repository on success',
+    () async {
+      const tSuccessMessage = 'Email sent successfully';
+      mockRepository.resultToReturn = const Right(tSuccessMessage);
 
-    final result = await useCase(tParams);
+      final result = await useCase(tParams);
 
-    expect(result, const Right(tSuccessMessage));
-  });
+      expect(result, const Right(tSuccessMessage));
+    },
+  );
 
   test('should return Failure from the repository on failure', () async {
     const tFailure = ServerFailure(message: 'Sign up failed');

@@ -5,6 +5,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../network/network_info.dart';
+import '../utils/constants.dart';
 import '../api/api_interceptors.dart';
 import '../api/api_consumer.dart';
 import '../api/dio_consumer.dart';
@@ -18,6 +19,14 @@ import '../../features/auth/domain/usecases/login_use_case.dart';
 import '../../features/auth/domain/usecases/sign_up_use_case.dart';
 import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/sign_up_cubit.dart';
+import '../../features/home/data/datasources/home_remote_data_source.dart';
+import '../../features/home/data/repositories/home_repository_impl.dart';
+import '../../features/home/domain/repositories/home_repository.dart';
+import '../../features/home/domain/usecases/get_categories_use_case.dart';
+import '../../features/home/domain/usecases/get_category_by_id_use_case.dart';
+import '../../features/home/domain/usecases/get_product_by_id_use_case.dart';
+import '../../features/home/domain/usecases/get_products_use_case.dart';
+import '../../features/home/presentation/cubit/home_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -42,8 +51,8 @@ Future<void> init() async {
     final dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: AppConstants.connectionTimeout,
+        receiveTimeout: AppConstants.receiveTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -92,5 +101,26 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiConsumer: sl()),
+  );
+
+  //! Features - Home
+  sl.registerFactory<HomeCubit>(
+    () => HomeCubit(getCategoriesUseCase: sl(), getProductsUseCase: sl()),
+  );
+  sl.registerLazySingleton<GetCategoriesUseCase>(
+    () => GetCategoriesUseCase(sl()),
+  );
+  sl.registerLazySingleton<GetProductsUseCase>(() => GetProductsUseCase(sl()));
+  sl.registerLazySingleton<GetCategoryByIdUseCase>(
+    () => GetCategoryByIdUseCase(sl()),
+  );
+  sl.registerLazySingleton<GetProductByIdUseCase>(
+    () => GetProductByIdUseCase(sl()),
+  );
+  sl.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(apiConsumer: sl()),
   );
 }

@@ -12,5 +12,9 @@ class ServerStrings {
   static const String profile = '/user/profile';
   static const String updateProfile = '/user/update';
 
-  // Add your custom endpoints here
+  // Home Endpoints
+  static const String categories = '/categories';
+  static const String products = '/products';
+  static String categoryById(int id) => '$categories/$id';
+  static String productById(int id) => '$products/$id';
 }

@@ -13,9 +13,11 @@ import 'package:fpdart/fpdart.dart';
 
 class MockAuthRepo implements AuthRepository {
   @override
-  Future<Either<Failure, String>> login(LoginParams params) async => const Right('OK');
+  Future<Either<Failure, String>> login(LoginParams params) async =>
+      const Right('OK');
   @override
-  Future<Either<Failure, String>> signUp(SignUpParams params) async => const Right('OK');
+  Future<Either<Failure, String>> signUp(SignUpParams params) async =>
+      const Right('OK');
 }
 
 void main() {
