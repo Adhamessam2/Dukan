@@ -7,16 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('DI registers and resolves SignUpCubit and LoginCubit correctly', () async {
-    SharedPreferences.setMockInitialValues({});
-    await di.init();
+  test(
+    'DI registers and resolves SignUpCubit and LoginCubit correctly',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      await di.init();
 
-    final signUpCubit = di.sl<SignUpCubit>();
-    expect(signUpCubit, isNotNull);
-    await signUpCubit.close();
+      final signUpCubit = di.sl<SignUpCubit>();
+      expect(signUpCubit, isNotNull);
+      await signUpCubit.close();
 
-    final loginCubit = di.sl<LoginCubit>();
-    expect(loginCubit, isNotNull);
-    await loginCubit.close();
-  });
+      final loginCubit = di.sl<LoginCubit>();
+      expect(loginCubit, isNotNull);
+      await loginCubit.close();
+    },
+  );
 }

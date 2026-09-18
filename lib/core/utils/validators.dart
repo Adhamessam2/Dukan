@@ -28,7 +28,10 @@ class Validators {
   }
 
   /// Validates password strength
-  static String? password(String? value, {int minLength = AppConstants.minPasswordLength}) {
+  static String? password(
+    String? value, {
+    int minLength = AppConstants.minPasswordLength,
+  }) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
@@ -75,7 +78,9 @@ class Validators {
       return 'Phone number is required';
     }
 
-    if (!AppConstants.phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s()-]'), ''))) {
+    if (!AppConstants.phoneRegex.hasMatch(
+      value.replaceAll(RegExp(r'[\s()-]'), ''),
+    )) {
       return 'Please enter a valid phone number';
     }
 

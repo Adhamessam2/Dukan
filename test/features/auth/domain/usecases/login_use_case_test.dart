@@ -15,7 +15,8 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> signUp(SignUpParams params) => throw UnimplementedError();
+  Future<Either<Failure, String>> signUp(SignUpParams params) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -32,14 +33,17 @@ void main() {
     password: 'password123',
   );
 
-  test('should return success message from repository on successful login', () async {
-    const tMessage = 'Logged in successfully';
-    mockRepository.loginResultToReturn = const Right(tMessage);
+  test(
+    'should return success message from repository on successful login',
+    () async {
+      const tMessage = 'Logged in successfully';
+      mockRepository.loginResultToReturn = const Right(tMessage);
 
-    final result = await useCase(tParams);
+      final result = await useCase(tParams);
 
-    expect(result, const Right(tMessage));
-  });
+      expect(result, const Right(tMessage));
+    },
+  );
 
   test('should return Failure from repository when login fails', () async {
     const tFailure = ServerFailure(message: 'Invalid credentials', code: 401);

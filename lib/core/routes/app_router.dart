@@ -6,6 +6,7 @@ import '../../features/auth/presentation/cubit/login_cubit.dart';
 import '../../features/auth/presentation/cubit/sign_up_cubit.dart';
 import '../../features/auth/presentation/views/auth_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/views/home_screen.dart';
 import 'routes.dart';
 
@@ -26,15 +27,18 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: Routes.home,
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => BlocProvider<HomeCubit>(
+        create: (_) => sl<HomeCubit>()..loadHomeData(),
+        child: const HomeScreen(),
+      ),
     ),
   ],
 );
 
 Widget _buildAuthScreen(AuthTab initialTab) => MultiBlocProvider(
-      providers: [
-        BlocProvider<LoginCubit>(create: (_) => sl<LoginCubit>()),
-        BlocProvider<SignUpCubit>(create: (_) => sl<SignUpCubit>()),
-      ],
-      child: AuthScreen(initialTab: initialTab),
-    );
+  providers: [
+    BlocProvider<LoginCubit>(create: (_) => sl<LoginCubit>()),
+    BlocProvider<SignUpCubit>(create: (_) => sl<SignUpCubit>()),
+  ],
+  child: AuthScreen(initialTab: initialTab),
+);

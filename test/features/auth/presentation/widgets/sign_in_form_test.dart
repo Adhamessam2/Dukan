@@ -13,9 +13,11 @@ import 'package:fpdart/fpdart.dart';
 
 class MockAuthRepository implements AuthRepository {
   @override
-  Future<Either<Failure, String>> login(LoginParams params) async => const Right('OK');
+  Future<Either<Failure, String>> login(LoginParams params) async =>
+      const Right('OK');
   @override
-  Future<Either<Failure, String>> signUp(SignUpParams params) async => const Right('OK');
+  Future<Either<Failure, String>> signUp(SignUpParams params) async =>
+      const Right('OK');
 }
 
 void main() {
@@ -28,9 +30,7 @@ void main() {
           home: Scaffold(
             body: BlocProvider.value(
               value: cubit,
-              child: SignInForm(
-                emailController: TextEditingController(),
-              ),
+              child: SignInForm(emailController: TextEditingController()),
             ),
           ),
         ),

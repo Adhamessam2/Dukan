@@ -11,17 +11,17 @@ class AppTheme {
 
   /// Light Theme Configuration
   static ThemeData get lightTheme => _buildTheme(
-        colorScheme: _lightColorScheme,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        scaffoldBackgroundColor: AppColors.lightBackground,
-      );
+    colorScheme: _lightColorScheme,
+    systemOverlayStyle: SystemUiOverlayStyle.dark,
+    scaffoldBackgroundColor: AppColors.lightBackground,
+  );
 
   /// Dark Theme Configuration
   static ThemeData get darkTheme => _buildTheme(
-        colorScheme: _darkColorScheme,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        scaffoldBackgroundColor: AppColors.darkBackground,
-      );
+    colorScheme: _darkColorScheme,
+    systemOverlayStyle: SystemUiOverlayStyle.light,
+    scaffoldBackgroundColor: AppColors.darkBackground,
+  );
 
   // ==========================================
   // COLOR SCHEMES

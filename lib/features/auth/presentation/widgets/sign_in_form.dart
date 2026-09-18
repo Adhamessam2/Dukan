@@ -15,10 +15,7 @@ import '../cubit/login_state.dart';
 class SignInForm extends StatefulWidget {
   final TextEditingController? emailController;
 
-  const SignInForm({
-    super.key,
-    this.emailController,
-  });
+  const SignInForm({super.key, this.emailController});
 
   @override
   State<SignInForm> createState() => _SignInFormState();
@@ -49,11 +46,11 @@ class _SignInFormState extends State<SignInForm> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<LoginCubit>().login(
-            LoginParams(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        LoginParams(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
@@ -133,7 +130,8 @@ class _SignInFormState extends State<SignInForm> {
                 setState(() => _obscurePassword = !_obscurePassword);
               },
             ),
-            validator: (value) => Validators.required(value, fieldName: 'Password'),
+            validator: (value) =>
+                Validators.required(value, fieldName: 'Password'),
           ),
           SizedBox(height: AppConstants.spaceLG.h),
 

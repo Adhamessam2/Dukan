@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/typography.dart';
 import '../utils/constants.dart';
 
-enum CustomButtonVariant {
-  primary,
-  secondary,
-  outline,
-}
+enum CustomButtonVariant { primary, secondary, outline }
 
 /// A versatile, tactile button complying with "Warm Architectural Minimalism".
 class CustomButton extends StatefulWidget {

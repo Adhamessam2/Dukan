@@ -82,9 +82,7 @@ class CustomTextField extends StatelessWidget {
           onTap: onTap,
           autovalidateMode: autovalidateMode,
           textInputAction: textInputAction,
-          style: AppTypography.bodyMd.copyWith(
-            color: colorScheme.onSurface,
-          ),
+          style: AppTypography.bodyMd.copyWith(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AppTypography.bodyMd.copyWith(
