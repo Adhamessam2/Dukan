@@ -12,7 +12,7 @@ class HomeBottomNavBar extends StatelessWidget {
     super.key,
     this.selectedIndex = 0,
     this.onIndexChanged,
-    this.cartItemCount = 2,
+    this.cartItemCount = 0,
   });
 
   @override

@@ -63,41 +63,42 @@ class HomeSectionHeader extends StatelessWidget {
           SizedBox(width: AppConstants.spacingSM.w),
 
           // Sort Button
-          InkWell(
-            onTap: onSortTap,
-            borderRadius: BorderRadius.circular(AppConstants.radiusDefault),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppConstants.spacingSM.w,
-                vertical: AppConstants.spacingXS.h,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.swap_vert_rounded,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 16.r,
-                  ),
-                  SizedBox(width: 4.w),
-                  BlocSelector<HomeCubit, HomeState, ProductSortOption>(
-                    selector: (state) => state.sortOption,
-                    builder: (context, sortOption) {
-                      return Text(
-                        sortOption == ProductSortOption.curated
-                            ? 'Sort by: Curated'
-                            : sortOption.label,
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      );
-                    },
-                  ),
-                ],
+          if (onSortTap != null)
+            InkWell(
+              onTap: onSortTap,
+              borderRadius: BorderRadius.circular(AppConstants.radiusDefault),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingSM.w,
+                  vertical: AppConstants.spacingXS.h,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.swap_vert_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 16.r,
+                    ),
+                    SizedBox(width: 4.w),
+                    BlocSelector<HomeCubit, HomeState, ProductSortOption>(
+                      selector: (state) => state.sortOption,
+                      builder: (context, sortOption) {
+                        return Text(
+                          sortOption == ProductSortOption.curated
+                              ? 'Sort by: Curated'
+                              : sortOption.label,
+                          style: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
