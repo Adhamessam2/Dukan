@@ -4,6 +4,18 @@ import '../../domain/entities/product_entity.dart';
 
 enum HomeStatus { initial, loading, success, failure }
 
+/// Available sorting options for products
+enum ProductSortOption {
+  curated('Curated'),
+  priceLowToHigh('Price: Low to High'),
+  priceHighToLow('Price: High to Low'),
+  topRated('Top Rated');
+
+  final String label;
+
+  const ProductSortOption(this.label);
+}
+
 /// State representation for Home feature
 class HomeState extends Equatable {
   final HomeStatus categoriesStatus;
@@ -13,6 +25,7 @@ class HomeState extends Equatable {
   final int? selectedCategoryId;
   final String? errorMessage;
   final String searchQuery;
+  final ProductSortOption sortOption;
 
   const HomeState({
     this.categoriesStatus = HomeStatus.initial,
@@ -22,11 +35,13 @@ class HomeState extends Equatable {
     this.selectedCategoryId,
     this.errorMessage,
     this.searchQuery = '',
+    this.sortOption = ProductSortOption.curated,
   });
 
-  /// Computed list of products matching the active category chip and search query
+  /// Computed list of products matching the active category chip and search query,
+  /// sorted by the active sort option.
   List<ProductEntity> get filteredProducts {
-    return products.where((product) {
+    final list = products.where((product) {
       final matchesCategory = selectedCategoryId == null ||
           product.category?.id == selectedCategoryId ||
           product.category?.parent?.id == selectedCategoryId ||
@@ -41,6 +56,17 @@ class HomeState extends Equatable {
 
       return matchesCategory && matchesSearch;
     }).toList();
+
+    switch (sortOption) {
+      case ProductSortOption.curated:
+        return list;
+      case ProductSortOption.priceLowToHigh:
+        return list..sort((a, b) => a.price.compareTo(b.price));
+      case ProductSortOption.priceHighToLow:
+        return list..sort((a, b) => b.price.compareTo(a.price));
+      case ProductSortOption.topRated:
+        return list..sort((a, b) => b.avgRating.compareTo(a.avgRating));
+    }
   }
 
   HomeState copyWith({
@@ -51,6 +77,7 @@ class HomeState extends Equatable {
     int? Function()? selectedCategoryId,
     String? errorMessage,
     String? searchQuery,
+    ProductSortOption? sortOption,
   }) {
     return HomeState(
       categoriesStatus: categoriesStatus ?? this.categoriesStatus,
@@ -62,6 +89,7 @@ class HomeState extends Equatable {
           : this.selectedCategoryId,
       errorMessage: errorMessage ?? this.errorMessage,
       searchQuery: searchQuery ?? this.searchQuery,
+      sortOption: sortOption ?? this.sortOption,
     );
   }
 
@@ -74,5 +102,6 @@ class HomeState extends Equatable {
         selectedCategoryId,
         errorMessage,
         searchQuery,
+        sortOption,
       ];
 }

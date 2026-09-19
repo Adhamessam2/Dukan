@@ -2,6 +2,8 @@ import 'package:Dukan/core/utils/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routes/routes.dart';
 import '../../../../core/utils/constants.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
@@ -27,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showSortOptions(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final cubit = context.read<HomeCubit>();
+    final currentSort = cubit.state.sortOption;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: colorScheme.surface,
@@ -68,30 +73,73 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(height: AppConstants.spacingSM.h),
-                ListTile(
-                  leading: const Icon(Icons.auto_awesome_rounded),
-                  title: const Text('Curated'),
-                  onTap: () => Navigator.pop(ctx),
+                _buildSortTile(
+                  ctx: ctx,
+                  cubit: cubit,
+                  option: ProductSortOption.curated,
+                  icon: Icons.auto_awesome_rounded,
+                  isSelected: currentSort == ProductSortOption.curated,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.arrow_upward_rounded),
-                  title: const Text('Price: Low to High'),
-                  onTap: () => Navigator.pop(ctx),
+                _buildSortTile(
+                  ctx: ctx,
+                  cubit: cubit,
+                  option: ProductSortOption.priceLowToHigh,
+                  icon: Icons.arrow_upward_rounded,
+                  isSelected: currentSort == ProductSortOption.priceLowToHigh,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.arrow_downward_rounded),
-                  title: const Text('Price: High to Low'),
-                  onTap: () => Navigator.pop(ctx),
+                _buildSortTile(
+                  ctx: ctx,
+                  cubit: cubit,
+                  option: ProductSortOption.priceHighToLow,
+                  icon: Icons.arrow_downward_rounded,
+                  isSelected: currentSort == ProductSortOption.priceHighToLow,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.star_rounded),
-                  title: const Text('Top Rated'),
-                  onTap: () => Navigator.pop(ctx),
+                _buildSortTile(
+                  ctx: ctx,
+                  cubit: cubit,
+                  option: ProductSortOption.topRated,
+                  icon: Icons.star_rounded,
+                  isSelected: currentSort == ProductSortOption.topRated,
                 ),
               ],
             ),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildSortTile({
+    required BuildContext ctx,
+    required HomeCubit cubit,
+    required ProductSortOption option,
+    required IconData icon,
+    required bool isSelected,
+  }) {
+    final colorScheme = Theme.of(ctx).colorScheme;
+
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+      ),
+      title: Text(
+        option.label,
+        style: TextStyle(
+          color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(
+              Icons.check_rounded,
+              color: colorScheme.primary,
+              size: AppConstants.iconSizeSM.r + 4.r,
+            )
+          : null,
+      onTap: () {
+        cubit.selectSortOption(option);
+        Navigator.pop(ctx);
       },
     );
   }
@@ -156,6 +204,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // 2-Column Responsive Products Grid
                   HomeProductsGrid(
+                    onProductTap: (product) {
+                      context.push(
+                        Routes.productDetailsPath(product.id),
+                        extra: product,
+                      );
+                    },
                     onAddToCart: (product) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(

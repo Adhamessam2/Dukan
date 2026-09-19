@@ -66,4 +66,9 @@ class HomeCubit extends Cubit<HomeState> {
   void updateSearchQuery(String query) {
     emit(state.copyWith(searchQuery: query));
   }
+
+  /// Updates the active product sorting option
+  void selectSortOption(ProductSortOption sortOption) {
+    emit(state.copyWith(sortOption: sortOption));
+  }
 }

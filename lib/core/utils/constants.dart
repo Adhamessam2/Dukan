@@ -58,13 +58,21 @@ class AppConstants {
   static const double radiusFull = 9999.0;
   static const double radiusRound = 9999.0;
 
+  // Responsive Design Sizes
+  static const Size designSizePortrait = Size(375, 812);
+  static const Size designSizeLandscape = Size(812, 375);
+
   // ==========================================
   // DESIGN SYSTEM: COMPONENT SIZING & STROKES
   // ==========================================
+  static const double headerHeight = 64.0;
+  static const double bottomNavBarHeight = 64.0;
+  static const double searchBarHeight = 44.0;
   static const double buttonHeight = 52.0;
   static const double inputHeight = 48.0;
   static const double chipHeight = 36.0;
   static const double stepperHeight = 36.0;
+  static const double productHeroHeight = 320.0;
   static const double hairlineStrokeWidth = 1.0;
   static const double controlSize = 20.0;
 
@@ -140,6 +148,10 @@ class AppConstants {
   static final RegExp phoneRegex = RegExp(r'^\+?[0-9]{10,15}$');
   static final RegExp urlRegex = RegExp(
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
+  );
+  static final RegExp htmlBoldRegex = RegExp(
+    r'<b>(.*?)<\/b>|([^<]+)',
+    dotAll: true,
   );
 
   // Error Messages

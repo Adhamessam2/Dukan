@@ -12,6 +12,7 @@ import 'package:Dukan/features/home/domain/repositories/home_repository.dart';
 import 'package:Dukan/features/home/domain/usecases/get_categories_use_case.dart';
 import 'package:Dukan/features/home/domain/usecases/get_products_use_case.dart';
 import 'package:Dukan/features/home/presentation/cubit/home_cubit.dart';
+import 'package:Dukan/features/home/presentation/cubit/home_state.dart';
 import 'package:Dukan/features/home/presentation/views/home_screen.dart';
 import 'package:Dukan/features/home/presentation/widgets/home_bottom_nav_bar.dart';
 import 'package:Dukan/features/home/presentation/widgets/home_category_chips.dart';
@@ -243,30 +244,42 @@ void main() {
 
     await tester.pumpWidget(buildTestWidget());
     await cubit.loadHomeData();
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Failed to load catalog'), findsOneWidget);
   });
 
-  testWidgets('Tapping sort button opens sort options bottom sheet', (tester) async {
+  testWidgets('Tapping sort button opens bottom sheet and updates sort option', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    mockGetCategoriesUseCase.resultToReturn = const Right([]);
-    mockGetProductsUseCase.resultToReturn = const Right([]);
+    mockGetCategoriesUseCase.resultToReturn = const Right([tCategory1, tCategory2]);
+    mockGetProductsUseCase.resultToReturn = const Right([tProduct1, tProduct2]);
 
     await tester.pumpWidget(buildTestWidget());
     await cubit.loadHomeData();
     await tester.pumpAndSettle();
 
     expect(find.text('Sort by: Curated'), findsOneWidget);
+
+    // Tap sort button
     await tester.tap(find.text('Sort by: Curated'));
     await tester.pumpAndSettle();
 
+    // Verify bottom sheet content
     expect(find.text('Sort Products'), findsOneWidget);
     expect(find.text('Price: Low to High'), findsOneWidget);
     expect(find.text('Price: High to Low'), findsOneWidget);
     expect(find.text('Top Rated'), findsOneWidget);
+
+    // Tap 'Price: Low to High'
+    await tester.tap(find.text('Price: Low to High'));
+    await tester.pumpAndSettle();
+
+    // Verify sort state updated
+    expect(cubit.state.sortOption, ProductSortOption.priceLowToHigh);
+    expect(find.text('Price: Low to High'), findsOneWidget);
   });
 }

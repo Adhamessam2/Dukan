@@ -20,7 +20,6 @@ class HomeBottomNavBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      height: 64.h,
       decoration: BoxDecoration(
         color: colorScheme.surface.withValues(alpha: 0.95),
         border: Border(
@@ -29,43 +28,43 @@ class HomeBottomNavBar extends StatelessWidget {
             width: AppConstants.hairlineStrokeWidth,
           ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        boxShadow: AppConstants.elevationLevel3,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(
-            context,
-            index: 0,
-            icon: Icons.home_filled,
-            label: 'Home',
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: AppConstants.bottomNavBarHeight.h.clamp(56.0, 72.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                context,
+                index: 0,
+                icon: Icons.home_filled,
+                label: 'Home',
+              ),
+              _buildNavItem(
+                context,
+                index: 1,
+                icon: Icons.explore_outlined,
+                label: 'Browse',
+              ),
+              _buildNavItem(
+                context,
+                index: 2,
+                icon: Icons.shopping_bag_outlined,
+                label: 'Cart',
+                badgeCount: cartItemCount,
+              ),
+              _buildNavItem(
+                context,
+                index: 3,
+                icon: Icons.receipt_long_outlined,
+                label: 'Orders',
+              ),
+            ],
           ),
-          _buildNavItem(
-            context,
-            index: 1,
-            icon: Icons.explore_outlined,
-            label: 'Browse',
-          ),
-          _buildNavItem(
-            context,
-            index: 2,
-            icon: Icons.shopping_bag_outlined,
-            label: 'Cart',
-            badgeCount: cartItemCount,
-          ),
-          _buildNavItem(
-            context,
-            index: 3,
-            icon: Icons.receipt_long_outlined,
-            label: 'Orders',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -77,7 +76,9 @@ class HomeBottomNavBar extends StatelessWidget {
     required String label,
     int? badgeCount,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     final isSelected = selectedIndex == index;
     final activeColor = colorScheme.onSurfaceVariant;
     final inactiveColor = colorScheme.secondary;
@@ -86,8 +87,12 @@ class HomeBottomNavBar extends StatelessWidget {
       onTap: () => onIndexChanged?.call(index),
       borderRadius: BorderRadius.circular(AppConstants.radiusDefault),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppConstants.margin.w,
+          vertical: 4.h.clamp(2.0, 6.0),
+        ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
@@ -95,7 +100,7 @@ class HomeBottomNavBar extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  size: 20.r,
+                  size: AppConstants.controlSize.r,
                   color: isSelected ? activeColor : inactiveColor,
                 ),
                 if (badgeCount != null && badgeCount > 0)
@@ -115,7 +120,7 @@ class HomeBottomNavBar extends StatelessWidget {
                       child: Center(
                         child: Text(
                           '$badgeCount',
-                          style: TextStyle(
+                          style: textTheme.labelSmall?.copyWith(
                             color: colorScheme.onPrimary,
                             fontSize: 9.sp,
                             fontWeight: FontWeight.w700,
@@ -129,7 +134,7 @@ class HomeBottomNavBar extends StatelessWidget {
             SizedBox(height: 2.h),
             Text(
               label,
-              style: TextStyle(
+              style: textTheme.labelSmall?.copyWith(
                 color: isSelected ? activeColor : inactiveColor,
                 fontSize: 10.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,

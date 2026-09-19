@@ -15,13 +15,13 @@ class HomeCategoryChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocSelector<HomeCubit, HomeState,
-        (List<CategoryEntity>, int?, HomeStatus)>(
-      selector: (state) => (
-        state.categories,
-        state.selectedCategoryId,
-        state.categoriesStatus,
-      ),
+    return BlocSelector<
+      HomeCubit,
+      HomeState,
+      (List<CategoryEntity>, int?, HomeStatus)
+    >(
+      selector: (state) =>
+          (state.categories, state.selectedCategoryId, state.categoriesStatus),
       builder: (context, data) {
         final (categories, selectedCategoryId, status) = data;
 
@@ -30,7 +30,7 @@ class HomeCategoryChips extends StatelessWidget {
         }
 
         return SizedBox(
-          height: 38.h,
+          height: 38.h.clamp(36.0, 48.0),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: AppConstants.margin.w),
@@ -43,7 +43,9 @@ class HomeCategoryChips extends StatelessWidget {
                   ? selectedCategoryId == null
                   : categories[index - 1].id == selectedCategoryId;
 
-              final title = isAllChip ? 'All' : categories[index - 1].categoryName;
+              final title = isAllChip
+                  ? 'All'
+                  : categories[index - 1].categoryName;
               final categoryId = isAllChip ? null : categories[index - 1].id;
 
               return InkWell(
@@ -55,13 +57,15 @@ class HomeCategoryChips extends StatelessWidget {
                   duration: AppConstants.shortAnimationDuration,
                   padding: EdgeInsets.symmetric(
                     horizontal: 16.w,
-                    vertical: 8.h,
+                    vertical: 6.h.clamp(4.0, 8.0),
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? colorScheme.inverseSurface
                         : colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(AppConstants.radiusRound),
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.radiusRound,
+                    ),
                     boxShadow: isSelected ? AppConstants.elevationLevel2 : null,
                   ),
                   alignment: Alignment.center,
@@ -72,7 +76,9 @@ class HomeCategoryChips extends StatelessWidget {
                           ? colorScheme.onInverseSurface
                           : colorScheme.secondary,
                       fontSize: 12.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -86,7 +92,7 @@ class HomeCategoryChips extends StatelessWidget {
 
   Widget _buildLoadingShimmer(ColorScheme colorScheme) {
     return SizedBox(
-      height: 38.h,
+      height: 38.h.clamp(36.0, 48.0),
       child: Shimmer.fromColors(
         baseColor: colorScheme.surfaceContainer,
         highlightColor: colorScheme.surfaceContainerLow,
@@ -98,7 +104,7 @@ class HomeCategoryChips extends StatelessWidget {
               SizedBox(width: AppConstants.spacingSM.w),
           itemBuilder: (_, index) => Container(
             width: (60 + index * 15).w,
-            height: 38.h,
+            height: 38.h.clamp(36.0, 48.0),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppConstants.radiusRound),

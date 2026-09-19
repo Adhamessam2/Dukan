@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/constants.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/localization/localization_manager.dart';
 
@@ -43,21 +44,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp.router(
-          title: 'Dukan',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
-          routerConfig: router,
-          localizationsDelegates: context.localizationDelegates,
-          supportedLocales: context.supportedLocales,
-          locale: context.locale,
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return ScreenUtilInit(
+          designSize: orientation == Orientation.landscape
+              ? AppConstants.designSizeLandscape
+              : AppConstants.designSizePortrait,
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) {
+            return MaterialApp.router(
+              title: 'Dukan',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: ThemeMode.system,
+              routerConfig: router,
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
+            );
+          },
         );
       },
     );

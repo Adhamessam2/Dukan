@@ -8,5 +8,4 @@ abstract class HomeRepository {
   Future<Either<Failure, List<CategoryEntity>>> getCategories();
   Future<Either<Failure, List<ProductEntity>>> getProducts();
   Future<Either<Failure, CategoryEntity>> getCategoryById(int id);
-  Future<Either<Failure, ProductEntity>> getProductById(int id);
 }

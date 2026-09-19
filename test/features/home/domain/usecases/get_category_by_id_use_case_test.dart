@@ -21,10 +21,6 @@ class MockHomeRepository implements HomeRepository {
   Future<Either<Failure, CategoryEntity>> getCategoryById(int id) async {
     return categoryResult!;
   }
-
-  @override
-  Future<Either<Failure, ProductEntity>> getProductById(int id) =>
-      throw UnimplementedError();
 }
 
 void main() {

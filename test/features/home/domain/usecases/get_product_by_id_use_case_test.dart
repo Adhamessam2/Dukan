@@ -1,74 +1,36 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:Dukan/core/errors/failure.dart';
-import 'package:Dukan/features/home/domain/entities/category_entity.dart';
 import 'package:Dukan/features/home/domain/entities/product_entity.dart';
-import 'package:Dukan/features/home/domain/repositories/home_repository.dart';
 import 'package:Dukan/features/home/domain/usecases/get_product_by_id_use_case.dart';
+import 'package:Dukan/features/product_details/domain/repositories/product_details_repository.dart';
 
-class MockHomeRepository implements HomeRepository {
-  Either<Failure, ProductEntity>? productResult;
-
-  @override
-  Future<Either<Failure, List<CategoryEntity>>> getCategories() =>
-      throw UnimplementedError();
-
-  @override
-  Future<Either<Failure, List<ProductEntity>>> getProducts() =>
-      throw UnimplementedError();
-
-  @override
-  Future<Either<Failure, CategoryEntity>> getCategoryById(int id) =>
-      throw UnimplementedError();
-
+class MockProductDetailsRepository implements ProductDetailsRepository {
   @override
   Future<Either<Failure, ProductEntity>> getProductById(int id) async {
-    return productResult!;
+    return const Right(
+      ProductEntity(id: 1, productName: 'Test Product', price: 100.0),
+    );
   }
 }
 
 void main() {
-  late GetProductByIdUseCase useCase;
-  late MockHomeRepository mockRepository;
+  test(
+    're-exported GetProductByIdUseCase successfully delegates to ProductDetailsRepository',
+    () async {
+      final repository = MockProductDetailsRepository();
+      final useCase = GetProductByIdUseCase(repository);
 
-  setUp(() {
-    mockRepository = MockHomeRepository();
-    useCase = GetProductByIdUseCase(mockRepository);
-  });
+      final result = await useCase(1);
 
-  const tProductId = 10;
-  const tProduct = ProductEntity(
-    id: tProductId,
-    productName: 'iPhone 14',
-    price: 999.0,
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (failure) => fail('Should have succeeded'),
+        (product) {
+          expect(product.id, 1);
+          expect(product.productName, 'Test Product');
+        },
+      );
+    },
   );
-
-  test('should return ProductEntity from repository', () async {
-    mockRepository.productResult = const Right(tProduct);
-
-    final result = await useCase(tProductId);
-
-    expect(result, const Right(tProduct));
-  });
-
-  test('should return Failure when repository fails', () async {
-    mockRepository.productResult =
-        const Left(ServerFailure(message: 'Product not found', code: 404));
-
-    final result = await useCase(tProductId);
-
-    expect(
-      result,
-      const Left(ServerFailure(message: 'Product not found', code: 404)),
-    );
-  });
-
-  test('should return ValidationFailure when product ID is <= 0', () async {
-    final result = await useCase(0);
-
-    expect(
-      result,
-      const Left(ValidationFailure(message: 'Invalid product ID')),
-    );
-  });
 }

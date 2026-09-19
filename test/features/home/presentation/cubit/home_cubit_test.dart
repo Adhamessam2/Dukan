@@ -119,4 +119,54 @@ void main() {
     cubit.updateSearchQuery('samsung');
     expect(cubit.state.filteredProducts.length, 0);
   });
+
+  test('selectSortOption reorders products properly', () async {
+    const p1 = ProductEntity(
+      id: 1,
+      productName: 'Cheap Phone',
+      price: 100.0,
+      avgRating: 3.5,
+    );
+    const p2 = ProductEntity(
+      id: 2,
+      productName: 'Mid Phone',
+      price: 500.0,
+      avgRating: 4.8,
+    );
+    const p3 = ProductEntity(
+      id: 3,
+      productName: 'Expensive Phone',
+      price: 1200.0,
+      avgRating: 4.2,
+    );
+
+    mockGetCategoriesUseCase.resultToReturn = const Right([]);
+    mockGetProductsUseCase.resultToReturn = const Right([p2, p3, p1]);
+
+    await cubit.loadHomeData();
+
+    // Default curated order
+    expect(cubit.state.sortOption, ProductSortOption.curated);
+    expect(cubit.state.filteredProducts.map((p) => p.id).toList(), [2, 3, 1]);
+
+    // Price: Low to High
+    cubit.selectSortOption(ProductSortOption.priceLowToHigh);
+    expect(cubit.state.sortOption, ProductSortOption.priceLowToHigh);
+    expect(cubit.state.filteredProducts.map((p) => p.id).toList(), [1, 2, 3]);
+
+    // Price: High to Low
+    cubit.selectSortOption(ProductSortOption.priceHighToLow);
+    expect(cubit.state.sortOption, ProductSortOption.priceHighToLow);
+    expect(cubit.state.filteredProducts.map((p) => p.id).toList(), [3, 2, 1]);
+
+    // Top Rated
+    cubit.selectSortOption(ProductSortOption.topRated);
+    expect(cubit.state.sortOption, ProductSortOption.topRated);
+    expect(cubit.state.filteredProducts.map((p) => p.id).toList(), [2, 3, 1]);
+
+    // Return to Curated
+    cubit.selectSortOption(ProductSortOption.curated);
+    expect(cubit.state.sortOption, ProductSortOption.curated);
+    expect(cubit.state.filteredProducts.map((p) => p.id).toList(), [2, 3, 1]);
+  });
 }
