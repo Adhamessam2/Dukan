@@ -22,7 +22,7 @@ class ProductDetailsHeader extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return Container(
-      height: AppConstants.avatarSizeLG.h,
+      height: AppConstants.headerHeight.h.clamp(56.0, 72.0),
       padding: EdgeInsets.symmetric(
         horizontal: showBackButton ? AppConstants.spacingXS.w : AppConstants.margin.w,
       ),

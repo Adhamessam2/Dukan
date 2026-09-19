@@ -135,7 +135,7 @@ class ProductDetailsScreen extends StatelessWidget {
               ),
               child: Container(
                 width: double.infinity,
-                height: AppConstants.productHeroHeight.h,
+                height: AppConstants.productHeroHeight.h.clamp(260.0, 420.0),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(AppConstants.radiusLG.r),

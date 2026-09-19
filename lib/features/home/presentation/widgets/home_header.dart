@@ -11,10 +11,12 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Container(
-      height: 64.h,
+      height: AppConstants.headerHeight.h.clamp(56.0, 72.0),
       padding: EdgeInsets.symmetric(horizontal: AppConstants.margin.w),
       decoration: BoxDecoration(
         color: colorScheme.surface.withValues(alpha: 0.95),
@@ -31,20 +33,21 @@ class HomeHeader extends StatelessWidget {
           // Brand Logo & Name
           Row(
             children: [
-              Container(
-                width: 32.r,
-                height: 32.r,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    'D',
-                    style: TextStyle(
-                      color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18.sp,
+              RepaintBoundary(
+                child: Container(
+                  width: AppConstants.avatarSizeSM.r,
+                  height: AppConstants.avatarSizeSM.r,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      'D',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
@@ -52,11 +55,9 @@ class HomeHeader extends StatelessWidget {
               SizedBox(width: AppConstants.spacingSM.w),
               Text(
                 'Dukaan',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: textTheme.titleLarge?.copyWith(
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
-                  fontSize: 18.sp,
-                  letterSpacing: -0.5,
                 ),
               ),
             ],

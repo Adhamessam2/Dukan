@@ -28,11 +28,10 @@ class HomeSectionHeader extends StatelessWidget {
           // Section Title & Dynamic Count
           Expanded(
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Flexible(
+                Expanded(
                   child: Text(
                     'Featured Products',
                     overflow: TextOverflow.ellipsis,
@@ -80,13 +79,20 @@ class HomeSectionHeader extends StatelessWidget {
                     size: 16.r,
                   ),
                   SizedBox(width: 4.w),
-                  Text(
-                    'Sort by: Curated',
-                    style: TextStyle(
-                      color: colorScheme.onSurfaceVariant,
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  BlocSelector<HomeCubit, HomeState, ProductSortOption>(
+                    selector: (state) => state.sortOption,
+                    builder: (context, sortOption) {
+                      return Text(
+                        sortOption == ProductSortOption.curated
+                            ? 'Sort by: Curated'
+                            : sortOption.label,
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

@@ -17,7 +17,13 @@ class HomeSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final searchBarHeight = AppConstants.searchBarHeight.h.clamp(
+      40.0,
+      AppConstants.buttonHeight,
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -29,7 +35,7 @@ class HomeSearchBar extends StatelessWidget {
           // Search Field
           Expanded(
             child: Container(
-              height: 44.h,
+              height: searchBarHeight,
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(AppConstants.radiusRound),
@@ -48,7 +54,7 @@ class HomeSearchBar extends StatelessWidget {
                       onChanged: onSearchChanged,
                       decoration: InputDecoration(
                         hintText: 'Search ceramics, apparel, goods...',
-                        hintStyle: TextStyle(
+                        hintStyle: textTheme.bodyMedium?.copyWith(
                           color: colorScheme.secondary,
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w400,
@@ -59,7 +65,7 @@ class HomeSearchBar extends StatelessWidget {
                         contentPadding: EdgeInsets.symmetric(vertical: 10.h),
                         isDense: true,
                       ),
-                      style: TextStyle(
+                      style: textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurface,
                         fontSize: 13.sp,
                       ),
@@ -86,8 +92,8 @@ class HomeSearchBar extends StatelessWidget {
             onTap: onFilterTap,
             borderRadius: BorderRadius.circular(AppConstants.radiusRound),
             child: Container(
-              width: 44.r,
-              height: 44.r,
+              width: searchBarHeight,
+              height: searchBarHeight,
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainer,
                 shape: BoxShape.circle,

@@ -30,7 +30,7 @@ class HomeCategoryChips extends StatelessWidget {
         }
 
         return SizedBox(
-          height: 38.h,
+          height: 38.h.clamp(36.0, 48.0),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: AppConstants.margin.w),
@@ -57,7 +57,7 @@ class HomeCategoryChips extends StatelessWidget {
                   duration: AppConstants.shortAnimationDuration,
                   padding: EdgeInsets.symmetric(
                     horizontal: 16.w,
-                    vertical: 8.h,
+                    vertical: 6.h.clamp(4.0, 8.0),
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -92,7 +92,7 @@ class HomeCategoryChips extends StatelessWidget {
 
   Widget _buildLoadingShimmer(ColorScheme colorScheme) {
     return SizedBox(
-      height: 38.h,
+      height: 38.h.clamp(36.0, 48.0),
       child: Shimmer.fromColors(
         baseColor: colorScheme.surfaceContainer,
         highlightColor: colorScheme.surfaceContainerLow,
@@ -104,7 +104,7 @@ class HomeCategoryChips extends StatelessWidget {
               SizedBox(width: AppConstants.spacingSM.w),
           itemBuilder: (_, index) => Container(
             width: (60 + index * 15).w,
-            height: 38.h,
+            height: 38.h.clamp(36.0, 48.0),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppConstants.radiusRound),
