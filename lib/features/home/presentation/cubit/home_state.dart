@@ -42,16 +42,20 @@ class HomeState extends Equatable {
   /// sorted by the active sort option.
   List<ProductEntity> get filteredProducts {
     final list = products.where((product) {
-      final matchesCategory = selectedCategoryId == null ||
+      final matchesCategory =
+          selectedCategoryId == null ||
           product.category?.id == selectedCategoryId ||
           product.category?.parent?.id == selectedCategoryId ||
           product.category?.parentId == selectedCategoryId;
 
-      final matchesSearch = searchQuery.isEmpty ||
-          product.productName.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          (product.productDescription
-                  ?.toLowerCase()
-                  .contains(searchQuery.toLowerCase()) ??
+      final matchesSearch =
+          searchQuery.isEmpty ||
+          product.productName.toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          ) ||
+          (product.productDescription?.toLowerCase().contains(
+                searchQuery.toLowerCase(),
+              ) ??
               false);
 
       return matchesCategory && matchesSearch;
@@ -95,13 +99,13 @@ class HomeState extends Equatable {
 
   @override
   List<Object?> get props => [
-        categoriesStatus,
-        productsStatus,
-        categories,
-        products,
-        selectedCategoryId,
-        errorMessage,
-        searchQuery,
-        sortOption,
-      ];
+    categoriesStatus,
+    productsStatus,
+    categories,
+    products,
+    selectedCategoryId,
+    errorMessage,
+    searchQuery,
+    sortOption,
+  ];
 }

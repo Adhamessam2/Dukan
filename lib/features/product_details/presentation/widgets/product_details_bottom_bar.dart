@@ -9,6 +9,7 @@ class ProductDetailsBottomBar extends StatelessWidget {
   final int maxStock;
   final double totalPrice;
   final bool isInStock;
+  final bool isLoading;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
   final VoidCallback? onAddToCart;
@@ -19,6 +20,7 @@ class ProductDetailsBottomBar extends StatelessWidget {
     required this.maxStock,
     required this.totalPrice,
     required this.isInStock,
+    this.isLoading = false,
     this.onIncrement,
     this.onDecrement,
     this.onAddToCart,
@@ -75,12 +77,13 @@ class ProductDetailsBottomBar extends StatelessWidget {
                   ),
                   Text(
                     '$quantity',
-                    style: (textTheme.titleMedium?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ) ??
-                            const TextStyle())
-                        .withTabularFigures(),
+                    style:
+                        (textTheme.titleMedium?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ) ??
+                                const TextStyle())
+                            .withTabularFigures(),
                   ),
                   IconButton(
                     onPressed: quantity < maxStock ? onIncrement : null,
@@ -104,38 +107,51 @@ class ProductDetailsBottomBar extends StatelessWidget {
               child: SizedBox(
                 height: AppConstants.buttonHeight.h,
                 child: FilledButton.icon(
-                  onPressed: isInStock ? onAddToCart : null,
+                  onPressed: (isInStock && !isLoading) ? onAddToCart : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     disabledBackgroundColor: colorScheme.surfaceContainerHigh,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppConstants.radiusMD.r),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusMD.r,
+                      ),
                     ),
                     padding: EdgeInsets.symmetric(
                       horizontal: AppConstants.margin.w,
                     ),
                   ),
-                  icon: Icon(
-                    Icons.shopping_bag_outlined,
-                    size: AppConstants.controlSize.r,
-                    color: isInStock
-                        ? colorScheme.onPrimary
-                        : colorScheme.outlineVariant,
-                  ),
+                  icon: isLoading
+                      ? SizedBox(
+                          width: AppConstants.controlSize.r,
+                          height: AppConstants.controlSize.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colorScheme.onPrimary,
+                          ),
+                        )
+                      : Icon(
+                          Icons.shopping_bag_outlined,
+                          size: AppConstants.controlSize.r,
+                          color: isInStock
+                              ? colorScheme.onPrimary
+                              : colorScheme.outlineVariant,
+                        ),
                   label: Text(
-                    isInStock
-                        ? 'Add to Bag • \$${totalPrice.toStringAsFixed(2)}'
-                        : 'Out of Stock',
-                    style: (textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.2,
-                              color: isInStock
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.outlineVariant,
-                            ) ??
-                            const TextStyle())
-                        .withTabularFigures(),
+                    isLoading
+                        ? 'Adding...'
+                        : (isInStock
+                              ? 'Add to Bag • \$${totalPrice.toStringAsFixed(2)}'
+                              : 'Out of Stock'),
+                    style:
+                        (textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.2,
+                                  color: isInStock
+                                      ? colorScheme.onPrimary
+                                      : colorScheme.outlineVariant,
+                                ) ??
+                                const TextStyle())
+                            .withTabularFigures(),
                   ),
                 ),
               ),

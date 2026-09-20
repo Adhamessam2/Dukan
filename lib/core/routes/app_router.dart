@@ -1,3 +1,4 @@
+import 'package:Dukan/features/cart/presentation/views/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/home/domain/entities/product_entity.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/views/home_screen.dart';
+import '../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../features/product_details/presentation/cubit/product_details_cubit.dart';
 import '../../features/product_details/presentation/views/product_details_screen.dart';
 import 'routes.dart';
@@ -28,24 +30,37 @@ final GoRouter router = GoRouter(
       path: Routes.register,
       builder: (context, state) => _buildAuthScreen(AuthTab.signUp),
     ),
-    GoRoute(
-      path: Routes.home,
-      builder: (context, state) => BlocProvider<HomeCubit>(
-        create: (_) => sl<HomeCubit>()..loadHomeData(),
-        child: const HomeScreen(),
+    ShellRoute(
+      builder: (context, state, child) => BlocProvider<CartCubit>(
+        create: (_) => sl<CartCubit>()..getCart(),
+        child: child,
       ),
-    ),
-    GoRoute(
-      path: Routes.productDetails,
-      builder: (context, state) {
-        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-        final initialProduct = state.extra as ProductEntity?;
-        return BlocProvider<ProductDetailsCubit>(
-          create: (_) => sl<ProductDetailsCubit>()
-            ..loadProductDetails(id, initialProduct: initialProduct),
-          child: const ProductDetailsScreen(),
-        );
-      },
+      routes: [
+        GoRoute(
+          path: Routes.home,
+          builder: (context, state) => BlocProvider<HomeCubit>(
+            create: (_) => sl<HomeCubit>()..loadHomeData(),
+            child: const HomeScreen(),
+          ),
+        ),
+        GoRoute(
+          path: Routes.productDetails,
+          builder: (context, state) {
+            final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+            final initialProduct = state.extra as ProductEntity?;
+            return BlocProvider<ProductDetailsCubit>(
+              create: (_) =>
+                  sl<ProductDetailsCubit>()
+                    ..loadProductDetails(id, initialProduct: initialProduct),
+              child: const ProductDetailsScreen(),
+            );
+          },
+        ),
+        GoRoute(
+          path: Routes.cart,
+          builder: (context, state) => const CartScreen(),
+        ),
+      ],
     ),
   ],
 );

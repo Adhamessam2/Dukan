@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../../home/domain/entities/product_entity.dart';
 import '../cubit/product_details_cubit.dart';
 import '../cubit/product_details_state.dart';
@@ -27,15 +29,33 @@ class ProductDetailsScreen extends StatelessWidget {
 
             // Screen Content
             Expanded(
-              child: BlocListener<ProductDetailsCubit, ProductDetailsState>(
-                listenWhen: (prev, curr) =>
-                    prev.errorMessage != curr.errorMessage &&
-                    curr.errorMessage != null,
-                listener: (context, state) {
-                  if (state.errorMessage != null) {
-                    context.showErrorSnackBar(state.errorMessage!);
-                  }
-                },
+              child: MultiBlocListener(
+                listeners: [
+                  BlocListener<ProductDetailsCubit, ProductDetailsState>(
+                    listenWhen: (prev, curr) =>
+                        prev.errorMessage != curr.errorMessage &&
+                        curr.errorMessage != null,
+                    listener: (context, state) {
+                      if (state.errorMessage != null) {
+                        context.showErrorSnackBar(state.errorMessage!);
+                      }
+                    },
+                  ),
+                  BlocListener<CartCubit, CartState>(
+                    listenWhen: (prev, curr) =>
+                        (ModalRoute.of(context)?.isCurrent ?? true) &&
+                        prev.status != curr.status,
+                    listener: (context, state) {
+                      if (state.status == CartStatus.success) {
+                        context.showSuccessSnackBar('Added to your bag');
+                        context.read<CartCubit>().getCart();
+                      } else if (state.status == CartStatus.failure &&
+                          state.errorMessage != null) {
+                        context.showErrorSnackBar(state.errorMessage!);
+                      }
+                    },
+                  ),
+                ],
                 child: BlocBuilder<ProductDetailsCubit, ProductDetailsState>(
                   buildWhen: (prev, curr) =>
                       prev.status != curr.status ||
@@ -91,25 +111,27 @@ class ProductDetailsScreen extends StatelessWidget {
               final (product, quantity, totalPrice) = data;
               if (product == null) return const SizedBox.shrink();
 
-              return ProductDetailsBottomBar(
-                quantity: quantity,
-                maxStock: product.stockQuantity,
-                totalPrice: totalPrice,
-                isInStock: product.isInStock,
-                onIncrement: () =>
-                    context.read<ProductDetailsCubit>().incrementQuantity(),
-                onDecrement: () =>
-                    context.read<ProductDetailsCubit>().decrementQuantity(),
-                onAddToCart: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Added $quantity x ${product.productName} to your bag',
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 2),
-                    ),
+              return BlocSelector<CartCubit, CartState, bool>(
+                selector: (cartState) =>
+                    cartState.addingProductId == product.id &&
+                    cartState.status == CartStatus.loading,
+                builder: (context, isAdding) {
+                  return ProductDetailsBottomBar(
+                    quantity: quantity,
+                    maxStock: product.stockQuantity,
+                    totalPrice: totalPrice,
+                    isInStock: product.isInStock,
+                    isLoading: isAdding,
+                    onIncrement: () =>
+                        context.read<ProductDetailsCubit>().incrementQuantity(),
+                    onDecrement: () =>
+                        context.read<ProductDetailsCubit>().decrementQuantity(),
+                    onAddToCart: () {
+                      context.read<CartCubit>().addToCart(
+                        productId: product.id,
+                        quantity: quantity,
+                      );
+                    },
                   );
                 },
               );

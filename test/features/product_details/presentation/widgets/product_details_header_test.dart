@@ -39,7 +39,9 @@ void main() {
     expect(find.text('Custom Title'), findsOneWidget);
   });
 
-  testWidgets('tapping back button triggers onBackTap callback', (tester) async {
+  testWidgets('tapping back button triggers onBackTap callback', (
+    tester,
+  ) async {
     var tapped = false;
     await tester.pumpWidget(buildTestWidget(onBackTap: () => tapped = true));
 

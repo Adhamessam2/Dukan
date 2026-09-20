@@ -7,6 +7,7 @@ import 'package:Dukan/features/home/data/datasources/home_remote_data_source.dar
 class MockApiConsumer implements ApiConsumer {
   String? calledPath;
   dynamic responseToReturn;
+  Exception? exceptionToThrow;
 
   @override
   Future<dynamic> get(
@@ -15,6 +16,7 @@ class MockApiConsumer implements ApiConsumer {
     Map<String, String>? headers,
   }) async {
     calledPath = path;
+    if (exceptionToThrow != null) throw exceptionToThrow!;
     return responseToReturn;
   }
 
@@ -132,10 +134,7 @@ void main() {
       mockApiConsumer.responseToReturn = {
         'success': true,
         'statusCode': 200,
-        'data': {
-          'id': 1,
-          'categoryName': 'Electronics',
-        },
+        'data': {'id': 1, 'categoryName': 'Electronics'},
       };
 
       final result = await dataSource.getCategoryById(1);
@@ -147,16 +146,14 @@ void main() {
   );
 
   test(
-    'getCategoryById throws NotFoundException when statusCode is 404',
+    'getCategoryById propagates NotFoundException when ApiConsumer throws',
     () async {
       final mockApiConsumer = MockApiConsumer();
       final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
 
-      mockApiConsumer.responseToReturn = {
-        'success': false,
-        'statusCode': 404,
-        'message': 'Category not found',
-      };
+      mockApiConsumer.exceptionToThrow = NotFoundException(
+        message: 'Category not found',
+      );
 
       expect(
         () => dataSource.getCategoryById(1),
@@ -165,21 +162,12 @@ void main() {
     },
   );
 
-  test(
-    'getCategoryById throws ParseException when data is invalid',
-    () async {
-      final mockApiConsumer = MockApiConsumer();
-      final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
+  test('getCategoryById throws ParseException when data is invalid', () async {
+    final mockApiConsumer = MockApiConsumer();
+    final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
 
-      mockApiConsumer.responseToReturn = {
-        'success': true,
-        'data': 'invalid',
-      };
+    mockApiConsumer.responseToReturn = {'success': true, 'data': 'invalid'};
 
-      expect(
-        () => dataSource.getCategoryById(1),
-        throwsA(isA<ParseException>()),
-      );
-    },
-  );
+    expect(() => dataSource.getCategoryById(1), throwsA(isA<ParseException>()));
+  });
 }

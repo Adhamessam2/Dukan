@@ -24,13 +24,10 @@ void main() {
       final result = await useCase(1);
 
       expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Should have succeeded'),
-        (product) {
-          expect(product.id, 1);
-          expect(product.productName, 'Test Product');
-        },
-      );
+      result.fold((failure) => fail('Should have succeeded'), (product) {
+        expect(product.id, 1);
+        expect(product.productName, 'Test Product');
+      });
     },
   );
 }

@@ -47,8 +47,9 @@ void main() {
   });
 
   test('should return Failure when repository fails', () async {
-    mockRepository.categoryResult =
-        const Left(ServerFailure(message: 'Category not found', code: 404));
+    mockRepository.categoryResult = const Left(
+      ServerFailure(message: 'Category not found', code: 404),
+    );
 
     final result = await useCase(tCategoryId);
 

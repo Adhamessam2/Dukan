@@ -7,6 +7,7 @@ import 'package:Dukan/features/product_details/data/datasources/product_details_
 class MockApiConsumer implements ApiConsumer {
   String? calledPath;
   dynamic responseToReturn;
+  Exception? exceptionToThrow;
 
   @override
   Future<dynamic> get(
@@ -15,6 +16,7 @@ class MockApiConsumer implements ApiConsumer {
     Map<String, String>? headers,
   }) async {
     calledPath = path;
+    if (exceptionToThrow != null) throw exceptionToThrow!;
     return responseToReturn;
   }
 
@@ -53,7 +55,9 @@ void main() {
 
   setUp(() {
     mockApiConsumer = MockApiConsumer();
-    dataSource = ProductDetailsRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
+    dataSource = ProductDetailsRemoteDataSourceImpl(
+      apiConsumer: mockApiConsumer,
+    );
   });
 
   test(
@@ -62,11 +66,7 @@ void main() {
       mockApiConsumer.responseToReturn = {
         'success': true,
         'statusCode': 200,
-        'data': {
-          'id': 10,
-          'productName': 'iPhone 14 Pro',
-          'price': '999.99',
-        },
+        'data': {'id': 10, 'productName': 'iPhone 14 Pro', 'price': '999.99'},
       };
 
       final result = await dataSource.getProductById(10);
@@ -79,13 +79,11 @@ void main() {
   );
 
   test(
-    'getProductById throws NotFoundException when statusCode is 404',
+    'getProductById propagates NotFoundException when ApiConsumer throws',
     () async {
-      mockApiConsumer.responseToReturn = {
-        'success': false,
-        'statusCode': 404,
-        'message': 'Product not found',
-      };
+      mockApiConsumer.exceptionToThrow = NotFoundException(
+        message: 'Product not found',
+      );
 
       expect(
         () => dataSource.getProductById(10),
@@ -94,18 +92,9 @@ void main() {
     },
   );
 
-  test(
-    'getProductById throws ParseException when data is invalid',
-    () async {
-      mockApiConsumer.responseToReturn = {
-        'success': true,
-        'data': 'invalid',
-      };
+  test('getProductById throws ParseException when data is invalid', () async {
+    mockApiConsumer.responseToReturn = {'success': true, 'data': 'invalid'};
 
-      expect(
-        () => dataSource.getProductById(10),
-        throwsA(isA<ParseException>()),
-      );
-    },
-  );
+    expect(() => dataSource.getProductById(10), throwsA(isA<ParseException>()));
+  });
 }

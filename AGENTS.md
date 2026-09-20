@@ -58,4 +58,11 @@ To perform an automated audit or code review on any file, feature, or pull reque
 - **Avoid Micro-Widget Sprawl**: Do not create single-use wrapper widgets that merely wrap a core design system widget (like `CustomButton` or `CustomTextField`) with hardcoded text or icons. Use core widgets directly.
 - **YAGNI in Service Interfaces**: Keep interfaces lean and focused on actual use cases. Avoid phantom interface methods with no callers in the application.
 
+### 6. Mandatory Landscape & Responsive Layout Safety
+- **Orientation & Wide Screen Adaptation**: Every screen, view, dialog, and action tray MUST gracefully support landscape orientation (`Orientation.landscape`).
+- **Zero RenderFlex Overflow on Static Views**: All non-scrollable centered views (e.g. empty states, error screens, auth/onboarding cards) MUST be wrapped in a `SingleChildScrollView(physics: const AlwaysScrollableScrollPhysics())` or provide clamped vertical spacing to guarantee zero `RenderFlex` overflows on shorter viewport heights.
+- **Component Height Clamping**: Component heights that scale with screen height (headers, search bars, category chips, bottom navigation bars, floating checkout bars) MUST be clamped using `.h.clamp(min, max)` to prevent vertical screen real estate exhaustion.
+- **Dual-Pane / Responsive Grid for Wide Viewports**: On wide/landscape viewports, screens with multiple distinct sections (such as cart items + order summary/checkout, or catalog listings) should leverage responsive multi-column layouts (e.g. dual-pane rows or grids) rather than stretching narrow content across the entire screen width.
+- **Automated Landscape Tests**: Feature presentation test suites MUST include landscape orientation verification (`tester.view.physicalSize = Size(1624, 750)` with `AppConstants.designSizeLandscape`) ensuring zero overflow exceptions and proper rendering.
+
 

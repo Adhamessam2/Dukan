@@ -31,6 +31,16 @@ import '../../features/product_details/data/repositories/product_details_reposit
 import '../../features/product_details/domain/repositories/product_details_repository.dart';
 import '../../features/product_details/domain/usecases/get_product_by_id_use_case.dart';
 import '../../features/product_details/presentation/cubit/product_details_cubit.dart';
+import '../../features/cart/data/datasources/cart_remote_data_source.dart';
+import '../../features/cart/data/repositories/cart_repository_impl.dart';
+import '../../features/cart/domain/repositories/cart_repository.dart';
+import '../../features/cart/domain/usecases/add_to_cart_use_case.dart';
+import '../../features/cart/domain/usecases/clear_cart_use_case.dart';
+import '../../features/cart/domain/usecases/delete_cart_item_use_case.dart';
+import '../../features/cart/domain/usecases/get_cart_item_use_case.dart';
+import '../../features/cart/domain/usecases/get_cart_use_case.dart';
+import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
+import '../../features/cart/presentation/cubit/cart_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -70,15 +80,14 @@ Future<void> init() async {
       ),
     );
 
-    if (AppConfig.enableLogging) {
-      dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseHeader: true,
-        ),
-      );
-    }
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: true,
+        enabled: AppConfig.enableLogging,
+      ),
+    );
 
     return dio;
   });
@@ -138,5 +147,33 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<ProductDetailsRemoteDataSource>(
     () => ProductDetailsRemoteDataSourceImpl(apiConsumer: sl()),
+  );
+
+  //! Features - Cart
+  sl.registerFactory<CartCubit>(
+    () => CartCubit(
+      addToCartUseCase: sl(),
+      getCartUseCase: sl(),
+      getCartItemUseCase: sl(),
+      updateCartItemUseCase: sl(),
+      deleteCartItemUseCase: sl(),
+      clearCartUseCase: sl(),
+    ),
+  );
+  sl.registerLazySingleton<AddToCartUseCase>(() => AddToCartUseCase(sl()));
+  sl.registerLazySingleton<GetCartUseCase>(() => GetCartUseCase(sl()));
+  sl.registerLazySingleton<GetCartItemUseCase>(() => GetCartItemUseCase(sl()));
+  sl.registerLazySingleton<UpdateCartItemUseCase>(
+    () => UpdateCartItemUseCase(sl()),
+  );
+  sl.registerLazySingleton<DeleteCartItemUseCase>(
+    () => DeleteCartItemUseCase(sl()),
+  );
+  sl.registerLazySingleton<ClearCartUseCase>(() => ClearCartUseCase(sl()));
+  sl.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<CartRemoteDataSource>(
+    () => CartRemoteDataSourceImpl(apiConsumer: sl()),
   );
 }

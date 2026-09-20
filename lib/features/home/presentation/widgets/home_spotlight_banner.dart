@@ -91,10 +91,7 @@ class HomeSpotlightBanner extends StatelessWidget {
               onTap: onExploreTap,
               borderRadius: BorderRadius.circular(AppConstants.radiusRound),
               child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 14.w,
-                  vertical: 8.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(AppConstants.radiusRound),
