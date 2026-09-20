@@ -24,6 +24,11 @@ This document defines the review guidelines for the **`code_reviewer`** subagent
    - **Redundant Animation Hierarchy**: Flag redundant layout animators (e.g. `AnimatedSize` wrapping `AnimatedCrossFade`).
    - **Repaint Isolation**: Ensure complex static UI subtrees (such as brand mascot headers) in scrollable views are isolated with `const RepaintBoundary`.
    - Verify `ScreenUtil` responsive dimensions (`.w`, `.h`, `.sp`, `.r`).
+   - **Mandatory Landscape & Orientation Responsiveness**:
+     - Confirm every screen and full-view presentation widget gracefully handles landscape (`Orientation.landscape`).
+     - Ensure static centered views (empty bags, error views, auth cards) are wrapped in `SingleChildScrollView` with clamped spacing to prevent `RenderFlex` overflow.
+     - Ensure component heights (headers, bottom bars, sticky trays) use `.clamp(...)` or adapt to avoid vertical viewport exhaustion.
+     - Require landscape orientation test cases (`tester.view.physicalSize = Size(1624, 750)` with `designSizeLandscape`).
    - Check ListView/GridView builders for large lists to prevent memory spikes.
 
 4. **Theme Conformance Audit**:

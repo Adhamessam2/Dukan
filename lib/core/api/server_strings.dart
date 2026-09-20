@@ -17,4 +17,8 @@ class ServerStrings {
   static const String products = '/products';
   static String categoryById(int id) => '$categories/$id';
   static String productById(int id) => '$products/$id';
+
+  // Cart Endpoints
+  static const String cartItem = '/cart-item';
+  static const String cart = '/cart';
 }

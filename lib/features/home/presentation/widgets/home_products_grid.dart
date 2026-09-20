@@ -13,23 +13,19 @@ class HomeProductsGrid extends StatelessWidget {
   final ValueChanged<ProductEntity>? onProductTap;
   final ValueChanged<ProductEntity>? onAddToCart;
 
-  const HomeProductsGrid({
-    super.key,
-    this.onProductTap,
-    this.onAddToCart,
-  });
+  const HomeProductsGrid({super.key, this.onProductTap, this.onAddToCart});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocSelector<HomeCubit, HomeState,
-        (List<ProductEntity>, HomeStatus, String?)>(
-      selector: (state) => (
-        state.filteredProducts,
-        state.productsStatus,
-        state.errorMessage,
-      ),
+    return BlocSelector<
+      HomeCubit,
+      HomeState,
+      (List<ProductEntity>, HomeStatus, String?)
+    >(
+      selector: (state) =>
+          (state.filteredProducts, state.productsStatus, state.errorMessage),
       builder: (context, data) {
         final (products, status, errorMessage) = data;
 
@@ -117,10 +113,7 @@ class HomeProductsGrid extends StatelessWidget {
             Text(
               message ?? 'Failed to load products',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colorScheme.onSurface,
-                fontSize: 14.sp,
-              ),
+              style: TextStyle(color: colorScheme.onSurface, fontSize: 14.sp),
             ),
             SizedBox(height: AppConstants.spacingSM.h),
             TextButton.icon(

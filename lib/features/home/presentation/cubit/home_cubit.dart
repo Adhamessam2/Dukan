@@ -16,50 +16,52 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// Loads both categories and products concurrently
   Future<void> loadHomeData() async {
-    emit(state.copyWith(
-      categoriesStatus: HomeStatus.loading,
-      productsStatus: HomeStatus.loading,
-    ));
+    emit(
+      state.copyWith(
+        categoriesStatus: HomeStatus.loading,
+        productsStatus: HomeStatus.loading,
+      ),
+    );
 
-    await Future.wait([
-      _fetchCategories(),
-      _fetchProducts(),
-    ]);
+    await Future.wait([_fetchCategories(), _fetchProducts()]);
   }
 
   Future<void> _fetchCategories() async {
     final result = await getCategoriesUseCase(const NoParams());
     result.fold(
-      (failure) => emit(state.copyWith(
-        categoriesStatus: HomeStatus.failure,
-        errorMessage: failure.message,
-      )),
-      (categories) => emit(state.copyWith(
-        categoriesStatus: HomeStatus.success,
-        categories: categories,
-      )),
+      (failure) => emit(
+        state.copyWith(
+          categoriesStatus: HomeStatus.failure,
+          errorMessage: failure.message,
+        ),
+      ),
+      (categories) => emit(
+        state.copyWith(
+          categoriesStatus: HomeStatus.success,
+          categories: categories,
+        ),
+      ),
     );
   }
 
   Future<void> _fetchProducts() async {
     final result = await getProductsUseCase(const NoParams());
     result.fold(
-      (failure) => emit(state.copyWith(
-        productsStatus: HomeStatus.failure,
-        errorMessage: failure.message,
-      )),
-      (products) => emit(state.copyWith(
-        productsStatus: HomeStatus.success,
-        products: products,
-      )),
+      (failure) => emit(
+        state.copyWith(
+          productsStatus: HomeStatus.failure,
+          errorMessage: failure.message,
+        ),
+      ),
+      (products) => emit(
+        state.copyWith(productsStatus: HomeStatus.success, products: products),
+      ),
     );
   }
 
   /// Sets the active category filter (null means 'All')
   void selectCategory(int? categoryId) {
-    emit(state.copyWith(
-      selectedCategoryId: () => categoryId,
-    ));
+    emit(state.copyWith(selectedCategoryId: () => categoryId));
   }
 
   /// Updates the live search filter query

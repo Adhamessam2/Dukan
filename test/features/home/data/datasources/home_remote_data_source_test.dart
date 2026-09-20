@@ -132,10 +132,7 @@ void main() {
       mockApiConsumer.responseToReturn = {
         'success': true,
         'statusCode': 200,
-        'data': {
-          'id': 1,
-          'categoryName': 'Electronics',
-        },
+        'data': {'id': 1, 'categoryName': 'Electronics'},
       };
 
       final result = await dataSource.getCategoryById(1);
@@ -165,21 +162,12 @@ void main() {
     },
   );
 
-  test(
-    'getCategoryById throws ParseException when data is invalid',
-    () async {
-      final mockApiConsumer = MockApiConsumer();
-      final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
+  test('getCategoryById throws ParseException when data is invalid', () async {
+    final mockApiConsumer = MockApiConsumer();
+    final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
 
-      mockApiConsumer.responseToReturn = {
-        'success': true,
-        'data': 'invalid',
-      };
+    mockApiConsumer.responseToReturn = {'success': true, 'data': 'invalid'};
 
-      expect(
-        () => dataSource.getCategoryById(1),
-        throwsA(isA<ParseException>()),
-      );
-    },
-  );
+    expect(() => dataSource.getCategoryById(1), throwsA(isA<ParseException>()));
+  });
 }

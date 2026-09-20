@@ -16,6 +16,9 @@ Failure mapExceptionToFailure(Object e) {
     return ForbiddenFailure(message: e.message, code: e.statusCode);
   }
   if (e is NotFoundException) {
+    if (e.message.toLowerCase().contains('invalid cred')) {
+      return UnauthorizedFailure(message: e.message, code: 401);
+    }
     return NotFoundFailure(message: e.message, code: e.statusCode);
   }
   if (e is NetworkException) return NetworkFailure(message: e.message);

@@ -176,7 +176,10 @@ void main() {
         expect(p1.productImages[0].isPrimary, isTrue);
         expect(p1.productImages[1].isPrimary, isFalse);
         expect(p1.primaryImage?.id, "cm1prodimg000108l4abcdef01");
-        expect(p1.primaryImageUrl, "https://4kwallpapers.com/images/walls/thumbs_3t/21872.jpg");
+        expect(
+          p1.primaryImageUrl,
+          "https://4kwallpapers.com/images/walls/thumbs_3t/21872.jpg",
+        );
 
         // Product 2
         final p2 = response.data[1];

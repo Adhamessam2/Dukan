@@ -27,10 +27,7 @@ class ProductDetailsRemoteDataSourceImpl
       if (statusCode == 404) {
         throw NotFoundException(message: message);
       }
-      throw ServerException(
-        message: message,
-        statusCode: statusCode,
-      );
+      throw ServerException(message: message, statusCode: statusCode);
     }
     final data = response['data'];
     if (data is! Map) {

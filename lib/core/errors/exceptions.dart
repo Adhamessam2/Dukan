@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../api/server_strings.dart';
 
 /// Base Exception class for all custom exceptions
 abstract class AppException implements Exception {
@@ -153,17 +154,22 @@ Never handleDioException(DioException e) {
       throw UnknownException(message: e.message ?? 'Unknown error');
     case DioExceptionType.badResponse:
       final statusCode = e.response?.statusCode;
+      final message = extractMessage();
       switch (statusCode) {
         case 401:
           throw UnauthorizedException(
             message: 'Incorrect email or password. Please try again.',
           );
         case 403:
-          throw ForbiddenException(message: extractMessage());
+          throw ForbiddenException(message: message);
         case 404:
-          throw NotFoundException(message: extractMessage());
+          if (message.toLowerCase().contains('invalid cred') ||
+              e.requestOptions.path.contains(ServerStrings.login)) {
+            throw UnauthorizedException(message: message);
+          }
+          throw NotFoundException(message: message);
         case 409:
-          throw ConflictException(message: extractMessage());
+          throw ConflictException(message: message);
         case 422:
           final responseData = e.response?.data;
           final errors =

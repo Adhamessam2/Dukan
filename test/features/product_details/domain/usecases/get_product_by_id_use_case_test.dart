@@ -39,8 +39,9 @@ void main() {
   });
 
   test('should return Failure when repository fails', () async {
-    mockRepository.productResult =
-        const Left(ServerFailure(message: 'Product not found', code: 404));
+    mockRepository.productResult = const Left(
+      ServerFailure(message: 'Product not found', code: 404),
+    );
 
     final result = await useCase(tProductId);
 

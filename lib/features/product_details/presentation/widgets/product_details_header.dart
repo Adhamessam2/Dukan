@@ -24,7 +24,9 @@ class ProductDetailsHeader extends StatelessWidget {
     return Container(
       height: AppConstants.headerHeight.h.clamp(56.0, 72.0),
       padding: EdgeInsets.symmetric(
-        horizontal: showBackButton ? AppConstants.spacingXS.w : AppConstants.margin.w,
+        horizontal: showBackButton
+            ? AppConstants.spacingXS.w
+            : AppConstants.margin.w,
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface.withValues(alpha: 0.95),

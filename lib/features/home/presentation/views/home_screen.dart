@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/routes.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../cart/presentation/cubit/cart_state.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/home_bottom_nav_bar.dart';
@@ -150,17 +152,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: BlocListener<HomeCubit, HomeState>(
-          listenWhen: (previous, current) =>
-              previous.errorMessage != current.errorMessage &&
-              current.errorMessage != null,
-          listener: (context, state) {
-            if (state.errorMessage != null) {
-              context.showErrorSnackBar(
-                state.errorMessage ?? 'somthing went wrong',
-              );
-            }
-          },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<HomeCubit, HomeState>(
+              listenWhen: (previous, current) =>
+                  previous.errorMessage != current.errorMessage &&
+                  current.errorMessage != null,
+              listener: (context, state) {
+                if (state.errorMessage != null) {
+                  context.showErrorSnackBar(
+                    state.errorMessage ?? 'something went wrong',
+                  );
+                }
+              },
+            ),
+            BlocListener<CartCubit, CartState>(
+              listenWhen: (previous, current) =>
+                  previous.status != current.status,
+              listener: (context, state) {
+                if (state.status == CartStatus.success) {
+                  context.showSuccessSnackBar('Added to your bag');
+                  context.read<CartCubit>().getCart();
+                } else if (state.status == CartStatus.failure &&
+                    state.errorMessage != null) {
+                  context.showErrorSnackBar(state.errorMessage!);
+                }
+              },
+            ),
+          ],
           child: RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().loadHomeData(),
             color: colorScheme.primary,
@@ -196,9 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const HomeSpotlightBanner(),
 
                   // Featured Products Section Header
-                  HomeSectionHeader(
-                    onSortTap: () => _showSortOptions(context),
-                  ),
+                  HomeSectionHeader(onSortTap: () => _showSortOptions(context)),
 
                   SizedBox(height: AppConstants.spacingSM.h),
 
@@ -211,15 +228,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     onAddToCart: (product) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Added ${product.productName} to your bag',
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          duration: const Duration(seconds: 2),
-                        ),
+                      context.read<CartCubit>().addToCart(
+                        productId: product.id,
+                        quantity: 1,
                       );
                     },
                   ),
@@ -234,9 +245,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: HomeBottomNavBar(
-        selectedIndex: _navIndex,
-        onIndexChanged: (index) => setState(() => _navIndex = index),
+      bottomNavigationBar: BlocSelector<CartCubit, CartState, int>(
+        selector: (state) => state.cart?.items.length ?? 0,
+        builder: (context, cartCount) {
+          return HomeBottomNavBar(
+            selectedIndex: _navIndex,
+            cartItemCount: cartCount,
+            onIndexChanged: (index) {
+              if (index == 2) {
+                context.push(Routes.cart);
+              } else {
+                setState(() => _navIndex = index);
+              }
+            },
+          );
+        },
       ),
     );
   }

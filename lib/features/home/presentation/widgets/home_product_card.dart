@@ -1,8 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../core/utils/constants.dart';
+import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../domain/entities/product_entity.dart';
 
 /// Product card adhering to the 2-column Figma specifications
@@ -52,7 +55,9 @@ class HomeProductCard extends StatelessWidget {
                               placeholder: (context, url) => Shimmer.fromColors(
                                 baseColor: colorScheme.surfaceContainer,
                                 highlightColor: colorScheme.surfaceContainerLow,
-                                child: Container(color: colorScheme.surfaceContainer),
+                                child: Container(
+                                  color: colorScheme.surfaceContainer,
+                                ),
                               ),
                               errorWidget: (context, url, error) => Center(
                                 child: Icon(
@@ -82,8 +87,12 @@ class HomeProductCard extends StatelessWidget {
                             vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
-                            color: colorScheme.primaryFixed.withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(AppConstants.radiusRound),
+                            color: colorScheme.primaryFixed.withValues(
+                              alpha: 0.95,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radiusRound,
+                            ),
                           ),
                           child: Text(
                             product.avgRating >= 5.0 ? 'BEST' : 'TOP RATED',
@@ -145,25 +154,49 @@ class HomeProductCard extends StatelessWidget {
                     letterSpacing: -0.2,
                   ),
                 ),
-                InkWell(
-                  onTap: onAddToCart,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusRound),
-                  child: Container(
-                    width: 32.r,
-                    height: 32.r,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: AppConstants.elevationLevel2,
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.add_rounded,
-                        color: colorScheme.onPrimary,
-                        size: 18.r,
+                BlocSelector<CartCubit, CartState, bool>(
+                  selector: (state) =>
+                      state.addingProductId == product.id &&
+                      state.status == CartStatus.loading,
+                  builder: (context, isAdding) {
+                    return InkWell(
+                      onTap: isAdding
+                          ? null
+                          : (onAddToCart ??
+                                () => context.read<CartCubit>().addToCart(
+                                  productId: product.id,
+                                  quantity: 1,
+                                )),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusRound,
                       ),
-                    ),
-                  ),
+                      child: Container(
+                        width: 32.r,
+                        height: 32.r,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: AppConstants.elevationLevel2,
+                        ),
+                        child: Center(
+                          child: isAdding
+                              ? SizedBox(
+                                  width: 16.r,
+                                  height: 16.r,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.add_rounded,
+                                  color: colorScheme.onPrimary,
+                                  size: 18.r,
+                                ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

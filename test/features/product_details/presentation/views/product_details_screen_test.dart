@@ -5,6 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:Dukan/core/errors/failure.dart';
 import 'package:Dukan/core/theme/app_theme.dart';
+import 'package:Dukan/features/cart/domain/entities/cart_entity.dart';
+import 'package:Dukan/features/cart/domain/entities/cart_item_entity.dart';
+import 'package:Dukan/features/cart/domain/repositories/cart_repository.dart';
+import 'package:Dukan/features/cart/domain/usecases/add_to_cart_use_case.dart';
+import 'package:Dukan/features/cart/domain/usecases/clear_cart_use_case.dart';
+import 'package:Dukan/features/cart/domain/usecases/delete_cart_item_use_case.dart';
+import 'package:Dukan/features/cart/domain/usecases/get_cart_item_use_case.dart';
+import 'package:Dukan/features/cart/domain/usecases/get_cart_use_case.dart';
+import 'package:Dukan/features/cart/domain/usecases/update_cart_item_use_case.dart';
+import 'package:Dukan/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:Dukan/features/home/domain/entities/category_entity.dart';
 import 'package:Dukan/features/home/domain/entities/product_entity.dart';
 import 'package:Dukan/features/home/domain/entities/product_image_entity.dart';
@@ -26,18 +36,65 @@ class MockProductDetailsRepository implements ProductDetailsRepository {
   }
 }
 
+class MockCartRepository implements CartRepository {
+  Either<Failure, CartItemEntity>? cartResult;
+
+  @override
+  Future<Either<Failure, CartItemEntity>> addToCart({
+    required int productId,
+    required int quantity,
+  }) async {
+    return cartResult ??
+        const Right(
+          CartItemEntity(
+            cartId: 1,
+            productId: 1,
+            quantity: 1,
+            isDeleted: false,
+          ),
+        );
+  }
+
+  @override
+  Future<Either<Failure, CartEntity>> getCart() async {
+    return const Right(CartEntity(id: 1, items: [], totalPrice: 0));
+  }
+
+  @override
+  Future<Either<Failure, ProductEntity>> getCartItem({
+    required String cartId,
+    required String productId,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, CartItemEntity>> updateCartItem({
+    required String cartId,
+    required String productId,
+    required int quantity,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, CartItemEntity>> deleteCartItem({
+    required String cartId,
+    required String productId,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, int>> clearCart() => throw UnimplementedError();
+}
+
 void main() {
   late ProductDetailsCubit cubit;
   late MockProductDetailsRepository mockRepository;
   late GetProductByIdUseCase getProductByIdUseCase;
+  late CartCubit cartCubit;
+  late MockCartRepository mockCartRepository;
+  late AddToCartUseCase addToCartUseCase;
 
   const tCategory = CategoryEntity(
     id: 4,
     categoryName: 'Smartphones & 5G Tablets',
-    parent: CategoryEntity(
-      id: 1,
-      categoryName: 'Electronics & Smart Devices',
-    ),
+    parent: CategoryEntity(id: 1, categoryName: 'Electronics & Smart Devices'),
   );
 
   const tImages = [
@@ -73,10 +130,27 @@ void main() {
     mockRepository = MockProductDetailsRepository();
     getProductByIdUseCase = GetProductByIdUseCase(mockRepository);
     cubit = ProductDetailsCubit(getProductByIdUseCase: getProductByIdUseCase);
+
+    mockCartRepository = MockCartRepository();
+    addToCartUseCase = AddToCartUseCase(mockCartRepository);
+    final getCartUseCase = GetCartUseCase(mockCartRepository);
+    final getCartItemUseCase = GetCartItemUseCase(mockCartRepository);
+    final updateCartItemUseCase = UpdateCartItemUseCase(mockCartRepository);
+    final deleteCartItemUseCase = DeleteCartItemUseCase(mockCartRepository);
+    final clearCartUseCase = ClearCartUseCase(mockCartRepository);
+    cartCubit = CartCubit(
+      addToCartUseCase: addToCartUseCase,
+      getCartUseCase: getCartUseCase,
+      getCartItemUseCase: getCartItemUseCase,
+      updateCartItemUseCase: updateCartItemUseCase,
+      deleteCartItemUseCase: deleteCartItemUseCase,
+      clearCartUseCase: clearCartUseCase,
+    );
   });
 
   tearDown(() {
     cubit.close();
+    cartCubit.close();
   });
 
   Widget buildTestWidget() {
@@ -86,15 +160,20 @@ void main() {
       splitScreenMode: true,
       builder: (context, child) => MaterialApp(
         theme: AppTheme.lightTheme,
-        home: BlocProvider<ProductDetailsCubit>.value(
-          value: cubit,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<ProductDetailsCubit>.value(value: cubit),
+            BlocProvider<CartCubit>.value(value: cartCubit),
+          ],
           child: const ProductDetailsScreen(),
         ),
       ),
     );
   }
 
-  testWidgets('renders all product details and sections on success', (tester) async {
+  testWidgets('renders all product details and sections on success', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -112,8 +191,14 @@ void main() {
     expect(find.byType(ProductDetailsBottomBar), findsOneWidget);
 
     expect(find.text('Product Details'), findsOneWidget);
-    expect(find.text('Refurbished iPhone 14 Pro - 128GB (DEEP PURPLE)'), findsOneWidget);
-    expect(find.text('Electronics & Smart Devices > Smartphones & 5G Tablets'), findsOneWidget);
+    expect(
+      find.text('Refurbished iPhone 14 Pro - 128GB (DEEP PURPLE)'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Electronics & Smart Devices > Smartphones & 5G Tablets'),
+      findsOneWidget,
+    );
     expect(find.text('SKU: SKU-IPH14P-128-PURPLE#01'), findsOneWidget);
     expect(find.text('\$999.99'), findsOneWidget);
     expect(find.text('In Stock (3 left)'), findsOneWidget);
@@ -122,35 +207,38 @@ void main() {
     expect(find.text('Add to Bag • \$999.99'), findsOneWidget);
   });
 
-  testWidgets('quantity stepper increments and decrements quantity and updates total price', (tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 2.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+  testWidgets(
+    'quantity stepper increments and decrements quantity and updates total price',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
 
-    mockRepository.productResult = const Right(tProduct);
+      mockRepository.productResult = const Right(tProduct);
 
-    await tester.pumpWidget(buildTestWidget());
-    await cubit.loadProductDetails(1, initialProduct: tProduct);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpWidget(buildTestWidget());
+      await cubit.loadProductDetails(1, initialProduct: tProduct);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('Add to Bag • \$999.99'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('Add to Bag • \$999.99'), findsOneWidget);
 
-    // Tap + to increment
-    await tester.tap(find.byIcon(Icons.add_rounded));
-    await tester.pump();
+      // Tap + to increment
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pump();
 
-    expect(find.text('2'), findsOneWidget);
-    expect(find.text('Add to Bag • \$1999.98'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('Add to Bag • \$1999.98'), findsOneWidget);
 
-    // Tap - to decrement
-    await tester.tap(find.byIcon(Icons.remove_rounded));
-    await tester.pump();
+      // Tap - to decrement
+      await tester.tap(find.byIcon(Icons.remove_rounded));
+      await tester.pump();
 
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('Add to Bag • \$999.99'), findsOneWidget);
-  });
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('Add to Bag • \$999.99'), findsOneWidget);
+    },
+  );
 
   testWidgets('tapping Add to Bag triggers snackbar', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -167,17 +255,21 @@ void main() {
     final addButton = find.text('Add to Bag • \$999.99');
     await tester.tap(addButton);
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.textContaining('Added 1 x Refurbished iPhone 14 Pro'), findsOneWidget);
+    expect(find.text('Added to your bag'), findsOneWidget);
   });
 
-  testWidgets('displays error view on failure when product is null', (tester) async {
+  testWidgets('displays error view on failure when product is null', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    mockRepository.productResult =
-        const Left(ServerFailure(message: 'Product not found', code: 404));
+    mockRepository.productResult = const Left(
+      ServerFailure(message: 'Product not found', code: 404),
+    );
 
     await tester.pumpWidget(buildTestWidget());
     await cubit.loadProductDetails(1);

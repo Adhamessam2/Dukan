@@ -53,7 +53,9 @@ void main() {
 
   setUp(() {
     mockApiConsumer = MockApiConsumer();
-    dataSource = ProductDetailsRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
+    dataSource = ProductDetailsRemoteDataSourceImpl(
+      apiConsumer: mockApiConsumer,
+    );
   });
 
   test(
@@ -62,11 +64,7 @@ void main() {
       mockApiConsumer.responseToReturn = {
         'success': true,
         'statusCode': 200,
-        'data': {
-          'id': 10,
-          'productName': 'iPhone 14 Pro',
-          'price': '999.99',
-        },
+        'data': {'id': 10, 'productName': 'iPhone 14 Pro', 'price': '999.99'},
       };
 
       final result = await dataSource.getProductById(10);
@@ -94,18 +92,9 @@ void main() {
     },
   );
 
-  test(
-    'getProductById throws ParseException when data is invalid',
-    () async {
-      mockApiConsumer.responseToReturn = {
-        'success': true,
-        'data': 'invalid',
-      };
+  test('getProductById throws ParseException when data is invalid', () async {
+    mockApiConsumer.responseToReturn = {'success': true, 'data': 'invalid'};
 
-      expect(
-        () => dataSource.getProductById(10),
-        throwsA(isA<ParseException>()),
-      );
-    },
-  );
+    expect(() => dataSource.getProductById(10), throwsA(isA<ParseException>()));
+  });
 }

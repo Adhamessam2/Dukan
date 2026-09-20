@@ -77,10 +77,12 @@ void main() {
   });
 
   test('loadHomeData handles failures properly', () async {
-    mockGetCategoriesUseCase.resultToReturn =
-        const Left(ServerFailure(message: 'Server error'));
-    mockGetProductsUseCase.resultToReturn =
-        const Left(NetworkFailure(message: 'No internet'));
+    mockGetCategoriesUseCase.resultToReturn = const Left(
+      ServerFailure(message: 'Server error'),
+    );
+    mockGetProductsUseCase.resultToReturn = const Left(
+      NetworkFailure(message: 'No internet'),
+    );
 
     await cubit.loadHomeData();
 
@@ -88,24 +90,27 @@ void main() {
     expect(cubit.state.productsStatus, HomeStatus.failure);
   });
 
-  test('selectCategory updates selectedCategoryId and filteredProducts', () async {
-    mockGetCategoriesUseCase.resultToReturn = const Right([tCategory]);
-    mockGetProductsUseCase.resultToReturn = const Right([tProduct]);
+  test(
+    'selectCategory updates selectedCategoryId and filteredProducts',
+    () async {
+      mockGetCategoriesUseCase.resultToReturn = const Right([tCategory]);
+      mockGetProductsUseCase.resultToReturn = const Right([tProduct]);
 
-    await cubit.loadHomeData();
+      await cubit.loadHomeData();
 
-    cubit.selectCategory(1);
-    expect(cubit.state.selectedCategoryId, 1);
-    expect(cubit.state.filteredProducts, [tProduct]);
+      cubit.selectCategory(1);
+      expect(cubit.state.selectedCategoryId, 1);
+      expect(cubit.state.filteredProducts, [tProduct]);
 
-    cubit.selectCategory(999);
-    expect(cubit.state.selectedCategoryId, 999);
-    expect(cubit.state.filteredProducts, isEmpty);
+      cubit.selectCategory(999);
+      expect(cubit.state.selectedCategoryId, 999);
+      expect(cubit.state.filteredProducts, isEmpty);
 
-    cubit.selectCategory(null);
-    expect(cubit.state.selectedCategoryId, isNull);
-    expect(cubit.state.filteredProducts, [tProduct]);
-  });
+      cubit.selectCategory(null);
+      expect(cubit.state.selectedCategoryId, isNull);
+      expect(cubit.state.filteredProducts, [tProduct]);
+    },
+  );
 
   test('updateSearchQuery filters products by query', () async {
     mockGetCategoriesUseCase.resultToReturn = const Right([tCategory]);

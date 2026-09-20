@@ -32,16 +32,12 @@ class ProductDetailsState extends Equatable {
       status: status ?? this.status,
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,
-      errorMessage:
-          clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
     );
   }
 
   @override
-  List<Object?> get props => [
-    status,
-    product,
-    quantity,
-    errorMessage,
-  ];
+  List<Object?> get props => [status, product, quantity, errorMessage];
 }

@@ -75,6 +75,9 @@ class AppConstants {
   static const double productHeroHeight = 320.0;
   static const double hairlineStrokeWidth = 1.0;
   static const double controlSize = 20.0;
+  static const double cartImageWidth = 80.0;
+  static const double cartImageHeight = 96.0;
+  static const double stepperButtonSize = 24.0;
 
   // ==========================================
   // DESIGN SYSTEM: ELEVATION SHADOWS
