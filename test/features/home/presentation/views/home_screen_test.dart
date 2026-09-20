@@ -62,12 +62,16 @@ class MockCartRepository implements CartRepository {
   Either<Failure, CartItemEntity>? cartResult;
   Either<Failure, CartEntity>? getCartResult;
   Completer<Either<Failure, CartItemEntity>>? completer;
+  int? lastAddedProductId;
+  int addToCartCallCount = 0;
 
   @override
   Future<Either<Failure, CartItemEntity>> addToCart({
     required int productId,
     required int quantity,
   }) async {
+    lastAddedProductId = productId;
+    addToCartCallCount++;
     if (completer != null) {
       return completer!.future;
     }
@@ -375,6 +379,66 @@ void main() {
     expect(find.text('Failed to add item to bag'), findsOneWidget);
   });
 
+  testWidgets(
+    'Disables add buttons on all cards while cart addition is in flight',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final completer = Completer<Either<Failure, CartItemEntity>>();
+      mockCartRepository.completer = completer;
+
+      mockGetCategoriesUseCase.resultToReturn = const Right([tCategory1]);
+      mockGetProductsUseCase.resultToReturn = const Right([
+        tProduct1,
+        tProduct2,
+      ]);
+
+      await tester.pumpWidget(buildTestWidget());
+      await cubit.loadHomeData();
+      await tester.pumpAndSettle();
+
+      final addButtons = find.byIcon(Icons.add_rounded);
+      expect(addButtons, findsNWidgets(2));
+
+      // Tap card 1
+      await tester.tap(addButtons.first);
+      await tester.pump();
+
+      // Card 1 shows spinner, Card 2 shows add icon
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+      expect(mockCartRepository.addToCartCallCount, equals(1));
+      expect(mockCartRepository.lastAddedProductId, equals(10));
+
+      // Attempt to tap Card 2 while card 1 is in-flight
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pump();
+
+      // Mock was not called a second time because button is disabled
+      expect(mockCartRepository.addToCartCallCount, equals(1));
+
+      // Complete cart addition
+      completer.complete(
+        const Right(
+          CartItemEntity(
+            cartId: 1,
+            productId: 10,
+            quantity: 1,
+            isDeleted: false,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Both buttons are back to normal
+      expect(find.byIcon(Icons.add_rounded), findsNWidgets(2));
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    },
+  );
+
   testWidgets('Bottom nav bar switches tab when tapped', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
@@ -466,6 +530,60 @@ void main() {
       // Verify sort state updated
       expect(cubit.state.sortOption, ProductSortOption.priceLowToHigh);
       expect(find.text('Price: Low to High'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'CartCubit listener in HomeScreen does not trigger when route is not current',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      mockGetCategoriesUseCase.resultToReturn = const Right([]);
+      mockGetProductsUseCase.resultToReturn = const Right([]);
+
+      late BuildContext testContext;
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(375, 812),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: MultiBlocProvider(
+              providers: [
+                BlocProvider<HomeCubit>.value(value: cubit),
+                BlocProvider<CartCubit>.value(value: cartCubit),
+              ],
+              child: Builder(
+                builder: (ctx) {
+                  testContext = ctx;
+                  return const HomeScreen();
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await cubit.loadHomeData();
+      await tester.pumpAndSettle();
+
+      // Push a dummy route so HomeScreen is not current
+      Navigator.of(testContext).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('Foreground Route')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Foreground Route'), findsOneWidget);
+
+      // Trigger cartCubit success emission
+      await cartCubit.addToCart(productId: 10, quantity: 1);
+      await tester.pump();
+
+      // Ensure no SnackBar from HomeScreen was displayed
+      expect(find.text('Added to your bag'), findsNothing);
     },
   );
 }

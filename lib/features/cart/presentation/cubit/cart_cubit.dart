@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../domain/entities/cart_entity.dart';
+import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/usecases/add_to_cart_use_case.dart';
 import '../../domain/usecases/clear_cart_use_case.dart';
 import '../../domain/usecases/delete_cart_item_use_case.dart';
@@ -123,9 +125,42 @@ class CartCubit extends Cubit<CartState> {
     required String productId,
     required int quantity,
   }) async {
+    final pId = int.tryParse(productId) ?? 0;
+    final previousCart = state.cart;
+
+    // Optimistically update cart in state through cubit for instant feedback
+    CartEntity? optimisticCart = state.cart;
+    if (state.cart != null) {
+      final updatedItems = state.cart!.items.map((it) {
+        if (it.productId == pId) {
+          return CartItemEntity(
+            cartId: it.cartId,
+            productId: it.productId,
+            quantity: quantity,
+            isDeleted: it.isDeleted,
+            product: it.product,
+          );
+        }
+        return it;
+      }).toList();
+
+      final newTotal = updatedItems.fold<double>(
+        0.0,
+        (sum, it) => sum + ((it.product?.price ?? 0.0) * it.quantity),
+      );
+
+      optimisticCart = CartEntity(
+        id: state.cart!.id,
+        items: updatedItems,
+        totalPrice: double.parse(newTotal.toStringAsFixed(2)),
+      );
+    }
+
     emit(
       state.copyWith(
         updateCartItemStatus: CartStatus.loading,
+        cart: optimisticCart,
+        pendingProductIds: {...state.pendingProductIds, pId},
         clearUpdateCartItemErrorMessage: true,
       ),
     );
@@ -144,15 +179,52 @@ class CartCubit extends Cubit<CartState> {
       (failure) => emit(
         state.copyWith(
           updateCartItemStatus: CartStatus.failure,
+          cart: previousCart,
+          pendingProductIds: state.pendingProductIds
+              .where((id) => id != pId)
+              .toSet(),
           updateCartItemErrorMessage: failure.message,
         ),
       ),
-      (item) => emit(
-        state.copyWith(
-          updateCartItemStatus: CartStatus.success,
-          updatedCartItem: item,
-        ),
-      ),
+      (item) {
+        CartEntity? reconciledCart = state.cart;
+        if (state.cart != null) {
+          final items = state.cart!.items.map((it) {
+            if (it.productId == pId) {
+              return CartItemEntity(
+                cartId: item.cartId ?? it.cartId,
+                productId: it.productId,
+                quantity: item.quantity,
+                isDeleted: item.isDeleted,
+                product: it.product,
+              );
+            }
+            return it;
+          }).toList();
+
+          final total = items.fold<double>(
+            0.0,
+            (sum, it) => sum + ((it.product?.price ?? 0.0) * it.quantity),
+          );
+
+          reconciledCart = CartEntity(
+            id: state.cart!.id,
+            items: items,
+            totalPrice: double.parse(total.toStringAsFixed(2)),
+          );
+        }
+
+        emit(
+          state.copyWith(
+            updateCartItemStatus: CartStatus.success,
+            updatedCartItem: item,
+            cart: reconciledCart,
+            pendingProductIds: state.pendingProductIds
+                .where((id) => id != pId)
+                .toSet(),
+          ),
+        );
+      },
     );
   }
 
@@ -160,9 +232,11 @@ class CartCubit extends Cubit<CartState> {
     required String cartId,
     required String productId,
   }) async {
+    final pId = int.tryParse(productId) ?? 0;
     emit(
       state.copyWith(
         deleteCartItemStatus: CartStatus.loading,
+        pendingProductIds: {...state.pendingProductIds, pId},
         clearDeleteCartItemErrorMessage: true,
       ),
     );
@@ -177,15 +251,58 @@ class CartCubit extends Cubit<CartState> {
       (failure) => emit(
         state.copyWith(
           deleteCartItemStatus: CartStatus.failure,
+          pendingProductIds: state.pendingProductIds
+              .where((id) => id != pId)
+              .toSet(),
           deleteCartItemErrorMessage: failure.message,
         ),
       ),
-      (item) => emit(
-        state.copyWith(
-          deleteCartItemStatus: CartStatus.success,
-          deletedCartItem: item,
-        ),
-      ),
+      (item) {
+        CartEntity? updatedCart = state.cart;
+        if (state.cart != null) {
+          List<CartItemEntity> updatedItems;
+          if (item.isDeleted) {
+            updatedItems = state.cart!.items
+                .where((it) => it.productId != pId)
+                .toList();
+          } else {
+            updatedItems = state.cart!.items.map((it) {
+              if (it.productId == pId) {
+                return CartItemEntity(
+                  cartId: item.cartId ?? it.cartId,
+                  productId: it.productId,
+                  quantity: item.quantity,
+                  isDeleted: item.isDeleted,
+                  product: it.product,
+                );
+              }
+              return it;
+            }).toList();
+          }
+
+          final newTotal = updatedItems.fold<double>(
+            0.0,
+            (sum, it) => sum + ((it.product?.price ?? 0.0) * it.quantity),
+          );
+
+          updatedCart = CartEntity(
+            id: state.cart!.id,
+            items: updatedItems,
+            totalPrice: double.parse(newTotal.toStringAsFixed(2)),
+          );
+        }
+
+        emit(
+          state.copyWith(
+            deleteCartItemStatus: CartStatus.success,
+            deletedCartItem: item,
+            cart: updatedCart,
+            pendingProductIds: state.pendingProductIds
+                .where((id) => id != pId)
+                .toSet(),
+          ),
+        );
+      },
     );
   }
 
@@ -208,12 +325,24 @@ class CartCubit extends Cubit<CartState> {
           clearCartErrorMessage: failure.message,
         ),
       ),
-      (count) => emit(
-        state.copyWith(
-          clearCartStatus: CartStatus.success,
-          clearedItemCount: count,
-        ),
-      ),
+      (count) {
+        CartEntity? clearedCart;
+        if (state.cart != null) {
+          clearedCart = CartEntity(
+            id: state.cart!.id,
+            items: const [],
+            totalPrice: 0.0,
+          );
+        }
+
+        emit(
+          state.copyWith(
+            clearCartStatus: CartStatus.success,
+            clearedItemCount: count,
+            cart: clearedCart,
+          ),
+        );
+      },
     );
   }
 }

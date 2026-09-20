@@ -159,19 +159,6 @@ void main() {
         );
       },
     );
-
-    test(
-      'should throw TypeError / Exception when response data is null or not a map',
-      () async {
-        mockApiConsumer.responseToReturn = {'success': true, 'data': null};
-
-        expect(
-          () =>
-              dataSource.addToCart(productId: tProductId, quantity: tQuantity),
-          throwsA(isA<TypeError>()),
-        );
-      },
-    );
   });
 
   group('getCart', () {

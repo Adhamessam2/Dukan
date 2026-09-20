@@ -28,6 +28,12 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<CartCubit>().getCart();
+  }
+
   void _handleCheckout(BuildContext context, double total) {
     context.showSuccessSnackBar(
       'Checkout functionality will be available in the next release.',
@@ -69,6 +75,23 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  Future<void> _handleRemoveItem({
+    required CartItemEntity item,
+    required String cartIdStr,
+  }) async {
+    final cubit = context.read<CartCubit>();
+    final productIdStr = item.productId.toString();
+    final count = item.quantity;
+
+    for (var i = 0; i < count; i++) {
+      await cubit.deleteCartItem(cartId: cartIdStr, productId: productIdStr);
+      if (cubit.state.deletedCartItem?.isDeleted == true ||
+          cubit.state.deleteCartItemStatus == CartStatus.failure) {
+        break;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -108,9 +131,7 @@ class _CartScreenState extends State<CartScreen> {
               listenWhen: (prev, curr) =>
                   prev.updateCartItemStatus != curr.updateCartItemStatus,
               listener: (context, state) {
-                if (state.updateCartItemStatus == CartStatus.success) {
-                  context.read<CartCubit>().getCart();
-                } else if (state.updateCartItemStatus == CartStatus.failure &&
+                if (state.updateCartItemStatus == CartStatus.failure &&
                     state.updateCartItemErrorMessage != null) {
                   context.showErrorSnackBar(state.updateCartItemErrorMessage!);
                 }
@@ -122,9 +143,9 @@ class _CartScreenState extends State<CartScreen> {
               listenWhen: (prev, curr) =>
                   prev.deleteCartItemStatus != curr.deleteCartItemStatus,
               listener: (context, state) {
-                if (state.deleteCartItemStatus == CartStatus.success) {
+                if (state.deleteCartItemStatus == CartStatus.success &&
+                    state.deletedCartItem?.isDeleted != false) {
                   context.showSuccessSnackBar('Item removed from your bag');
-                  context.read<CartCubit>().getCart();
                 } else if (state.deleteCartItemStatus == CartStatus.failure &&
                     state.deleteCartItemErrorMessage != null) {
                   context.showErrorSnackBar(state.deleteCartItemErrorMessage!);
@@ -139,7 +160,6 @@ class _CartScreenState extends State<CartScreen> {
               listener: (context, state) {
                 if (state.clearCartStatus == CartStatus.success) {
                   context.showSuccessSnackBar('Your bag has been cleared');
-                  context.read<CartCubit>().getCart();
                 } else if (state.clearCartStatus == CartStatus.failure &&
                     state.clearCartErrorMessage != null) {
                   context.showErrorSnackBar(state.clearCartErrorMessage!);
@@ -157,7 +177,8 @@ class _CartScreenState extends State<CartScreen> {
                 child: BlocBuilder<CartCubit, CartState>(
                   buildWhen: (prev, curr) =>
                       prev.getCartStatus != curr.getCartStatus ||
-                      prev.cart != curr.cart,
+                      prev.cart != curr.cart ||
+                      prev.pendingProductIds != curr.pendingProductIds,
                   builder: (context, state) {
                     // Initial loading with no prior data
                     if (state.getCartStatus == CartStatus.loading &&
@@ -219,8 +240,20 @@ class _CartScreenState extends State<CartScreen> {
                         Orientation.landscape;
 
                     return isLandscape
-                        ? _buildLandscapeLayout(context, cart, items, cartIdStr)
-                        : _buildPortraitLayout(context, cart, items, cartIdStr);
+                        ? _buildLandscapeLayout(
+                            context,
+                            state,
+                            cart,
+                            items,
+                            cartIdStr,
+                          )
+                        : _buildPortraitLayout(
+                            context,
+                            state,
+                            cart,
+                            items,
+                            cartIdStr,
+                          );
                   },
                 ),
               ),
@@ -349,6 +382,7 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildPortraitLayout(
     BuildContext context,
+    CartState state,
     CartEntity cart,
     List<CartItemEntity> items,
     String cartIdStr,
@@ -382,36 +416,36 @@ class _CartScreenState extends State<CartScreen> {
               itemBuilder: (context, index) {
                 final item = items[index];
                 final productIdStr = item.productId.toString();
+                final isPending = state.pendingProductIds.contains(
+                  item.productId,
+                );
 
                 return CartItemCard(
                   item: item,
-                  onIncrement: () {
-                    context.read<CartCubit>().updateCartItem(
-                      cartId: cartIdStr,
-                      productId: productIdStr,
-                      quantity: item.quantity + 1,
-                    );
-                  },
-                  onDecrement: () {
-                    if (item.quantity > 1) {
-                      context.read<CartCubit>().updateCartItem(
-                        cartId: cartIdStr,
-                        productId: productIdStr,
-                        quantity: item.quantity - 1,
-                      );
-                    } else {
-                      context.read<CartCubit>().deleteCartItem(
-                        cartId: cartIdStr,
-                        productId: productIdStr,
-                      );
-                    }
-                  },
-                  onRemove: () {
-                    context.read<CartCubit>().deleteCartItem(
-                      cartId: cartIdStr,
-                      productId: productIdStr,
-                    );
-                  },
+                  onIncrement: isPending
+                      ? null
+                      : () => context.read<CartCubit>().updateCartItem(
+                          cartId: cartIdStr,
+                          productId: productIdStr,
+                          quantity: item.quantity + 1,
+                        ),
+                  onDecrement: isPending
+                      ? null
+                      : () {
+                          if (item.quantity > 1) {
+                            context.read<CartCubit>().updateCartItem(
+                              cartId: cartIdStr,
+                              productId: productIdStr,
+                              quantity: item.quantity - 1,
+                            );
+                          } else {
+                            _handleRemoveItem(item: item, cartIdStr: cartIdStr);
+                          }
+                        },
+                  onRemove: isPending
+                      ? null
+                      : () =>
+                            _handleRemoveItem(item: item, cartIdStr: cartIdStr),
                 );
               },
             ),
@@ -441,6 +475,7 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildLandscapeLayout(
     BuildContext context,
+    CartState state,
     CartEntity cart,
     List<CartItemEntity> items,
     String cartIdStr,
@@ -484,36 +519,41 @@ class _CartScreenState extends State<CartScreen> {
                     itemBuilder: (context, index) {
                       final item = items[index];
                       final productIdStr = item.productId.toString();
+                      final isPending = state.pendingProductIds.contains(
+                        item.productId,
+                      );
 
                       return CartItemCard(
                         item: item,
-                        onIncrement: () {
-                          context.read<CartCubit>().updateCartItem(
-                            cartId: cartIdStr,
-                            productId: productIdStr,
-                            quantity: item.quantity + 1,
-                          );
-                        },
-                        onDecrement: () {
-                          if (item.quantity > 1) {
-                            context.read<CartCubit>().updateCartItem(
-                              cartId: cartIdStr,
-                              productId: productIdStr,
-                              quantity: item.quantity - 1,
-                            );
-                          } else {
-                            context.read<CartCubit>().deleteCartItem(
-                              cartId: cartIdStr,
-                              productId: productIdStr,
-                            );
-                          }
-                        },
-                        onRemove: () {
-                          context.read<CartCubit>().deleteCartItem(
-                            cartId: cartIdStr,
-                            productId: productIdStr,
-                          );
-                        },
+                        onIncrement: isPending
+                            ? null
+                            : () => context.read<CartCubit>().updateCartItem(
+                                cartId: cartIdStr,
+                                productId: productIdStr,
+                                quantity: item.quantity + 1,
+                              ),
+                        onDecrement: isPending
+                            ? null
+                            : () {
+                                if (item.quantity > 1) {
+                                  context.read<CartCubit>().updateCartItem(
+                                    cartId: cartIdStr,
+                                    productId: productIdStr,
+                                    quantity: item.quantity - 1,
+                                  );
+                                } else {
+                                  _handleRemoveItem(
+                                    item: item,
+                                    cartIdStr: cartIdStr,
+                                  );
+                                }
+                              },
+                        onRemove: isPending
+                            ? null
+                            : () => _handleRemoveItem(
+                                item: item,
+                                cartIdStr: cartIdStr,
+                              ),
                       );
                     },
                   ),

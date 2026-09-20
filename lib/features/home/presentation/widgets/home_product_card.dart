@@ -154,14 +154,17 @@ class HomeProductCard extends StatelessWidget {
                     letterSpacing: -0.2,
                   ),
                 ),
-                BlocSelector<CartCubit, CartState, bool>(
-                  selector: (state) =>
-                      state.addingProductId == product.id &&
-                      state.status == CartStatus.loading,
-                  builder: (context, isAdding) {
+                BlocSelector<CartCubit, CartState, (bool, bool)>(
+                  selector: (state) => (
+                    state.addingProductId == product.id &&
+                        state.status == CartStatus.loading,
+                    state.status == CartStatus.loading,
+                  ),
+                  builder: (context, data) {
+                    final (isAddingThis, isAnyLoading) = data;
                     return InkWell(
-                      onTap: isAdding
-                          ? null
+                      onTap: isAnyLoading
+                          ? () {}
                           : (onAddToCart ??
                                 () => context.read<CartCubit>().addToCart(
                                   productId: product.id,
@@ -179,7 +182,7 @@ class HomeProductCard extends StatelessWidget {
                           boxShadow: AppConstants.elevationLevel2,
                         ),
                         child: Center(
-                          child: isAdding
+                          child: isAddingThis
                               ? SizedBox(
                                   width: 16.r,
                                   height: 16.r,
