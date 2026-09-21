@@ -42,7 +42,9 @@ class ProductDetailsScreen extends StatelessWidget {
                     },
                   ),
                   BlocListener<CartCubit, CartState>(
-                    listenWhen: (prev, curr) => prev.status != curr.status,
+                    listenWhen: (prev, curr) =>
+                        (ModalRoute.of(context)?.isCurrent ?? true) &&
+                        prev.status != curr.status,
                     listener: (context, state) {
                       if (state.status == CartStatus.success) {
                         context.showSuccessSnackBar('Added to your bag');

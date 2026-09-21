@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,11 +32,15 @@ class MockCartRepository implements CartRepository {
   bool clearCartCalled = false;
 
   Either<Failure, CartItemEntity>? updateCartItemResult;
+  Completer<Either<Failure, CartItemEntity>>? updateCartItemCompleter;
+  int updateCartItemCallCount = 0;
   String? updateCartIdCalled;
   String? updateProductIdCalled;
   int? updateQuantityCalled;
 
   Either<Failure, CartItemEntity>? deleteCartItemResult;
+  Future<Either<Failure, CartItemEntity>> Function()? deleteCartItemHandler;
+  int deleteCartItemCallCount = 0;
   String? deleteCartIdCalled;
   String? deleteProductIdCalled;
 
@@ -58,15 +63,20 @@ class MockCartRepository implements CartRepository {
     required String productId,
     required int quantity,
   }) async {
+    updateCartItemCallCount++;
     updateCartIdCalled = cartId;
     updateProductIdCalled = productId;
     updateQuantityCalled = quantity;
+    if (updateCartItemCompleter != null) {
+      return updateCartItemCompleter!.future;
+    }
     return updateCartItemResult ??
         Right(
           CartItemEntity(
             cartId: int.tryParse(cartId),
             productId: int.tryParse(productId) ?? 0,
             quantity: quantity,
+            isDeleted: false,
           ),
         );
   }
@@ -76,8 +86,12 @@ class MockCartRepository implements CartRepository {
     required String cartId,
     required String productId,
   }) async {
+    deleteCartItemCallCount++;
     deleteCartIdCalled = cartId;
     deleteProductIdCalled = productId;
+    if (deleteCartItemHandler != null) {
+      return deleteCartItemHandler!();
+    }
     return deleteCartItemResult ??
         Right(
           CartItemEntity(
@@ -352,4 +366,88 @@ void main() {
     expect(mockRepository.deleteCartIdCalled, equals('1'));
     expect(mockRepository.deleteProductIdCalled, equals('1'));
   });
+
+  testWidgets(
+    'tapping remove X button on multi-quantity item deletes until completely removed',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      mockRepository.getCartResult = const Right(tCart);
+      var calls = 0;
+      mockRepository.deleteCartItemHandler = () async {
+        calls++;
+        if (calls == 1) {
+          // First delete decrements to quantity 1, not yet deleted
+          return const Right(
+            CartItemEntity(
+              cartId: 1,
+              productId: 1,
+              quantity: 1,
+              isDeleted: false,
+            ),
+          );
+        } else {
+          // Second delete removes the item completely
+          return const Right(
+            CartItemEntity(
+              cartId: 1,
+              productId: 1,
+              quantity: 0,
+              isDeleted: true,
+            ),
+          );
+        }
+      };
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // First item in tCart has quantity 2
+      final closeButtons = find.byIcon(Icons.close_rounded);
+      await tester.tap(closeButtons.first);
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Verified: called twice to remove all 2 units of product 1
+      expect(mockRepository.deleteCartItemCallCount, equals(2));
+      expect(find.text('Item removed from your bag'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'disables item controls while mutation is in progress, preventing overlapping requests',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final completer = Completer<Either<Failure, CartItemEntity>>();
+      mockRepository.updateCartItemCompleter = completer;
+
+      mockRepository.getCartResult = const Right(tCart);
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      final addButtons = find.byIcon(Icons.add_rounded);
+      await tester.tap(addButtons.first);
+      await tester.pump();
+
+      expect(mockRepository.updateCartItemCallCount, equals(1));
+
+      // Attempt second tap while in-flight
+      await tester.tap(addButtons.first);
+      await tester.pump();
+
+      // Call count remains 1 because controls are disabled
+      expect(mockRepository.updateCartItemCallCount, equals(1));
+
+      completer.complete(
+        const Right(CartItemEntity(cartId: 1, productId: 1, quantity: 3)),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+    },
+  );
 }
