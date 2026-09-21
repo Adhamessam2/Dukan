@@ -18,7 +18,8 @@ import '../../features/orders/presentation/cubit/checkout_cubit.dart';
 import '../../features/orders/presentation/cubit/orders_cubit.dart';
 import '../../features/orders/presentation/views/checkout_screen.dart';
 import '../../features/orders/presentation/views/orders_screen.dart';
-import '../widgets/custom_app_bar.dart';
+import '../../features/orders/presentation/cubit/order_details_cubit.dart';
+import '../../features/orders/presentation/views/order_details_screen.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
@@ -87,9 +88,9 @@ final GoRouter router = GoRouter(
           path: Routes.orderDetails,
           builder: (context, state) {
             final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-            return Scaffold(
-              appBar: CustomAppBar(title: 'Order #$id'),
-              body: Center(child: Text('Order Details for #$id')),
+            return BlocProvider<OrderDetailsCubit>(
+              create: (_) => sl<OrderDetailsCubit>()..loadOrderDetails(id),
+              child: OrderDetailsScreen(orderId: id),
             );
           },
         ),

@@ -55,12 +55,12 @@ class OrdersScreen extends StatelessWidget {
         selector: (state) => state.cart?.items.length ?? 0,
         builder: (context, cartCount) {
           return HomeBottomNavBar(
-            selectedIndex: 3,
+            selectedIndex: 2,
             cartItemCount: cartCount,
             onIndexChanged: (index) {
               if (index == 0) {
                 context.go(Routes.home);
-              } else if (index == 2) {
+              } else if (index == 1) {
                 context.push(Routes.cart);
               }
             },
@@ -232,6 +232,8 @@ class OrdersScreen extends StatelessWidget {
                       subtitle:
                           state.errorMessage ??
                           'Please check your connection and try again.',
+                      actionLabel: 'Try Again',
+                      actionIcon: const Icon(Icons.refresh_rounded),
                       onStartShoppingPressed: cubit.loadOrders,
                     ),
                   );
@@ -377,6 +379,8 @@ class OrdersScreen extends StatelessWidget {
                             subtitle:
                                 state.errorMessage ??
                                 'Please check your connection and try again.',
+                            actionLabel: 'Try Again',
+                            actionIcon: const Icon(Icons.refresh_rounded),
                             onStartShoppingPressed: cubit.loadOrders,
                           ),
                         );

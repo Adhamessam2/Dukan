@@ -140,7 +140,11 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('Your Bag is Empty'), findsOneWidget);
       expect(find.text('Start Shopping'), findsOneWidget);
-      expect(find.byType(HomeBottomNavBar), findsOneWidget);
+      final navBarFinder = find.byType(HomeBottomNavBar);
+      expect(navBarFinder, findsOneWidget);
+      final navBar = tester.widget<HomeBottomNavBar>(navBarFinder);
+      expect(navBar.selectedIndex, 1);
+      expect(find.text('Browse'), findsNothing);
     },
   );
 
@@ -194,7 +198,11 @@ void main() {
       expect(find.text('Secure 256-bit Checkout'), findsOneWidget);
 
       // Bottom Navigation Bar is present
-      expect(find.byType(HomeBottomNavBar), findsOneWidget);
+      final navBarFinder = find.byType(HomeBottomNavBar);
+      expect(navBarFinder, findsOneWidget);
+      final navBar = tester.widget<HomeBottomNavBar>(navBarFinder);
+      expect(navBar.selectedIndex, 1);
+      expect(find.text('Browse'), findsNothing);
 
       // In landscape, the floating bottom CartStickyCheckoutBar is omitted
       // because checkout is integrated into the right pane

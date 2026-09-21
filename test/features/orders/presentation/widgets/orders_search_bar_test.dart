@@ -68,5 +68,20 @@ void main() {
       expect(currentQuery, '');
       expect(find.text('initial'), findsNothing);
     });
+
+    testWidgets(
+      'didUpdateWidget updates text on external initialQuery change',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(initialQuery: 'query1', onQueryChanged: (_) {}),
+        );
+        expect(find.text('query1'), findsOneWidget);
+
+        await tester.pumpWidget(
+          buildTestWidget(initialQuery: 'query2', onQueryChanged: (_) {}),
+        );
+        expect(find.text('query2'), findsOneWidget);
+      },
+    );
   });
 }

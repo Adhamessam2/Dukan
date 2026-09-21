@@ -172,9 +172,9 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Browse'), findsOneWidget);
       expect(find.text('Cart'), findsOneWidget);
       expect(find.text('Orders'), findsOneWidget);
+      expect(find.text('Browse'), findsNothing);
     },
   );
 
@@ -239,9 +239,9 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('Dukaan'), findsOneWidget);
       expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Browse'), findsOneWidget);
       expect(find.text('Cart'), findsOneWidget);
       expect(find.text('Orders'), findsOneWidget);
+      expect(find.text('Browse'), findsNothing);
     },
   );
 }

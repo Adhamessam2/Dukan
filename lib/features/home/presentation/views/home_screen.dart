@@ -253,9 +253,9 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _navIndex,
             cartItemCount: cartCount,
             onIndexChanged: (index) {
-              if (index == 2) {
+              if (index == 1) {
                 context.push(Routes.cart);
-              } else if (index == 3) {
+              } else if (index == 2) {
                 context.push(Routes.orders);
               } else {
                 setState(() => _navIndex = index);

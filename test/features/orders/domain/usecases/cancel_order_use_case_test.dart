@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:Dukan/core/errors/failure.dart';
 import 'package:Dukan/features/orders/domain/entities/create_order_params.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
+import 'package:Dukan/features/orders/domain/entities/order_payment_status_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/domain/repositories/orders_repository.dart';
 import 'package:Dukan/features/orders/domain/usecases/cancel_order_use_case.dart';
@@ -30,6 +31,11 @@ class FakeOrdersRepository implements OrdersRepository {
     if (failure != null) return Left(failure!);
     return Right(orderResponse!);
   }
+
+  @override
+  Future<Either<Failure, OrderPaymentStatusEntity>> getOrderPaymentStatus(
+    int id,
+  ) => throw UnimplementedError();
 }
 
 void main() {

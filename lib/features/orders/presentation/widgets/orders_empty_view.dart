@@ -8,12 +8,16 @@ import '../../../../core/widgets/custom_button.dart';
 class OrdersEmptyView extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String actionLabel;
+  final Widget? actionIcon;
   final VoidCallback? onStartShoppingPressed;
 
   const OrdersEmptyView({
     super.key,
     this.title = 'No Orders Found',
     this.subtitle = 'Browse our collection and place your first order.',
+    this.actionLabel = 'Start Shopping',
+    this.actionIcon = const Icon(Icons.shopping_bag_outlined),
     this.onStartShoppingPressed,
   });
 
@@ -96,8 +100,8 @@ class OrdersEmptyView extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: CustomButton(
-                    text: 'Start Shopping',
-                    prefixIcon: const Icon(Icons.shopping_bag_outlined),
+                    text: actionLabel,
+                    prefixIcon: actionIcon,
                     onPressed: onStartShoppingPressed,
                   ),
                 ),

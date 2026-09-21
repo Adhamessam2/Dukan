@@ -26,4 +26,5 @@ class ServerStrings {
   static const String order = '/order';
   static String orderById(int id) => '$order/$id';
   static String cancelOrder(int id) => '$order/$id/cancel';
+  static String orderPaymentStatus(int id) => '$order/$id/payment-status';
 }

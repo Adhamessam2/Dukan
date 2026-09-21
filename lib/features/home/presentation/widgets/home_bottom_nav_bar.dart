@@ -46,19 +46,13 @@ class HomeBottomNavBar extends StatelessWidget {
               _buildNavItem(
                 context,
                 index: 1,
-                icon: Icons.explore_outlined,
-                label: 'Browse',
-              ),
-              _buildNavItem(
-                context,
-                index: 2,
                 icon: Icons.shopping_bag_outlined,
                 label: 'Cart',
                 badgeCount: cartItemCount,
               ),
               _buildNavItem(
                 context,
-                index: 3,
+                index: 2,
                 icon: Icons.receipt_long_outlined,
                 label: 'Orders',
               ),

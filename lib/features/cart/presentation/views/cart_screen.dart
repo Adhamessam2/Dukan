@@ -258,11 +258,13 @@ class _CartScreenState extends State<CartScreen> {
           BlocSelector<CartCubit, CartState, int>(
             selector: (state) => state.cart?.items.length ?? 0,
             builder: (context, count) => HomeBottomNavBar(
-              selectedIndex: 2,
+              selectedIndex: 1,
               cartItemCount: count,
               onIndexChanged: (index) {
                 if (index == 0) {
                   context.go(Routes.home);
+                } else if (index == 2) {
+                  context.push(Routes.orders);
                 }
               },
             ),
@@ -365,6 +367,11 @@ class _CartScreenState extends State<CartScreen> {
     return CartItemCard(
       item: item,
       onIncrement: () {
+        final state = context.read<CartCubit>().state;
+        if (state.updateCartItemStatus == CartStatus.loading ||
+            state.deleteCartItemStatus == CartStatus.loading) {
+          return;
+        }
         context.read<CartCubit>().updateCartItem(
           cartId: cartIdStr,
           productId: productIdStr,
@@ -372,6 +379,11 @@ class _CartScreenState extends State<CartScreen> {
         );
       },
       onDecrement: () {
+        final state = context.read<CartCubit>().state;
+        if (state.updateCartItemStatus == CartStatus.loading ||
+            state.deleteCartItemStatus == CartStatus.loading) {
+          return;
+        }
         if (item.quantity > 1) {
           context.read<CartCubit>().updateCartItem(
             cartId: cartIdStr,
@@ -386,6 +398,11 @@ class _CartScreenState extends State<CartScreen> {
         }
       },
       onRemove: () {
+        final state = context.read<CartCubit>().state;
+        if (state.updateCartItemStatus == CartStatus.loading ||
+            state.deleteCartItemStatus == CartStatus.loading) {
+          return;
+        }
         context.read<CartCubit>().deleteCartItem(
           cartId: cartIdStr,
           productId: productIdStr,

@@ -121,5 +121,18 @@ void main() {
         expect(selectedOrder, equals(tOrder));
       },
     );
+
+    testWidgets(
+      'renders plural "items" for single-line-item order when quantity > 1',
+      (tester) async {
+        final orderWithMultipleQuantity = tOrder.copyWith(
+          items: const [OrderItemEntity(quantity: 3, product: tProduct1)],
+        );
+        await tester.pumpWidget(buildTestWidget(orderWithMultipleQuantity));
+        await tester.pumpAndSettle();
+
+        expect(find.text('3 items'), findsOneWidget);
+      },
+    );
   });
 }

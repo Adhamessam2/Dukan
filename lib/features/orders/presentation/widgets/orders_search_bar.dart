@@ -24,20 +24,24 @@ class OrdersSearchBar extends StatefulWidget {
 class _OrdersSearchBarState extends State<OrdersSearchBar> {
   late final TextEditingController _controller;
   Timer? _debounceTimer;
+  String _lastDispatched = '';
 
   @override
   void initState() {
     super.initState();
+    _lastDispatched = widget.initialQuery;
     _controller = TextEditingController(text: widget.initialQuery);
   }
 
   void _handleChanged(String text) {
     if (widget.debounceDuration == Duration.zero) {
+      _lastDispatched = text;
       widget.onQueryChanged(text);
       return;
     }
     _debounceTimer?.cancel();
     _debounceTimer = Timer(widget.debounceDuration, () {
+      _lastDispatched = text;
       widget.onQueryChanged(text);
     });
   }
@@ -46,7 +50,9 @@ class _OrdersSearchBarState extends State<OrdersSearchBar> {
   void didUpdateWidget(covariant OrdersSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialQuery != widget.initialQuery &&
+        widget.initialQuery != _lastDispatched &&
         _controller.text != widget.initialQuery) {
+      _lastDispatched = widget.initialQuery;
       _controller.text = widget.initialQuery;
     }
   }
@@ -115,6 +121,7 @@ class _OrdersSearchBarState extends State<OrdersSearchBar> {
                   onPressed: () {
                     _debounceTimer?.cancel();
                     _controller.clear();
+                    _lastDispatched = '';
                     widget.onQueryChanged('');
                   },
                 );

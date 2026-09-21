@@ -233,7 +233,7 @@ class OrderCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${item.quantity} item',
+                  '${item.quantity} ${item.quantity == 1 ? 'item' : 'items'}',
                   style: textTheme.labelSmall?.copyWith(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,

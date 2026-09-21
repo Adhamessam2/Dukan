@@ -367,4 +367,75 @@ void main() {
       expect(() => dataSource.cancelOrder(4), throwsA(isA<ParseException>()));
     },
   );
+
+  group('getOrderPaymentStatus', () {
+    const tId = 5;
+    final tResponse = {
+      "success": true,
+      "statusCode": 200,
+      "data": {
+        "id": 5,
+        "orderStatus": "PENDING",
+        "totalAmount": "0.5",
+        "payments": [
+          {
+            "id": "cmu9z81di00005mohki9g8mgy",
+            "status": "PENDING",
+            "provider": "PAYMOB",
+            "updatedAt": "2026-09-20T15:34:00.421Z",
+          },
+        ],
+      },
+    };
+
+    test(
+      'calls GET /order/{id}/payment-status and parses model on success',
+      () async {
+        final fakeApi = FakeApiConsumer();
+        final dataSource = OrdersRemoteDataSourceImpl(apiConsumer: fakeApi);
+        fakeApi.mockResponse = tResponse;
+
+        final result = await dataSource.getOrderPaymentStatus(tId);
+
+        expect(fakeApi.lastPath, ServerStrings.orderPaymentStatus(tId));
+        expect(result.id, 5);
+        expect(result.orderStatus, 'PENDING');
+        expect(result.totalAmount, 0.5);
+        expect(result.payments.length, 1);
+        expect(result.payments.first.provider, 'PAYMOB');
+      },
+    );
+
+    test('throws ServerException when success is false', () async {
+      final fakeApi = FakeApiConsumer();
+      final dataSource = OrdersRemoteDataSourceImpl(apiConsumer: fakeApi);
+      fakeApi.mockResponse = {
+        "success": false,
+        "statusCode": 404,
+        "message": "Order not found",
+      };
+
+      expect(
+        () => dataSource.getOrderPaymentStatus(tId),
+        throwsA(
+          isA<ServerException>().having(
+            (e) => e.message,
+            'message',
+            'Order not found',
+          ),
+        ),
+      );
+    });
+
+    test('throws ParseException when data is not a Map', () async {
+      final fakeApi = FakeApiConsumer();
+      final dataSource = OrdersRemoteDataSourceImpl(apiConsumer: fakeApi);
+      fakeApi.mockResponse = {"success": true, "statusCode": 200, "data": null};
+
+      expect(
+        () => dataSource.getOrderPaymentStatus(tId),
+        throwsA(isA<ParseException>()),
+      );
+    });
+  });
 }

@@ -6,6 +6,8 @@ import 'package:Dukan/core/errors/failure.dart';
 import 'package:Dukan/core/network/network_info.dart';
 import 'package:Dukan/features/orders/data/datasources/orders_remote_data_source.dart';
 import 'package:Dukan/features/orders/data/models/order_model.dart';
+import 'package:Dukan/features/orders/data/models/order_payment_status_model.dart';
+import 'package:Dukan/features/orders/data/models/payment_transaction_model.dart';
 import 'package:Dukan/features/orders/data/repositories/orders_repository_impl.dart';
 import 'package:Dukan/features/orders/domain/entities/create_order_params.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
@@ -22,6 +24,7 @@ class FakeNetworkInfo implements NetworkInfo {
 class FakeOrdersRemoteDataSource implements OrdersRemoteDataSource {
   OrderModel? modelToReturn;
   List<OrderModel>? ordersToReturn;
+  OrderPaymentStatusModel? paymentStatusToReturn;
   Exception? exceptionToThrow;
 
   @override
@@ -46,6 +49,12 @@ class FakeOrdersRemoteDataSource implements OrdersRemoteDataSource {
   Future<OrderModel> cancelOrder(int id) async {
     if (exceptionToThrow != null) throw exceptionToThrow!;
     return modelToReturn!;
+  }
+
+  @override
+  Future<OrderPaymentStatusModel> getOrderPaymentStatus(int id) async {
+    if (exceptionToThrow != null) throw exceptionToThrow!;
+    return paymentStatusToReturn!;
   }
 }
 
@@ -249,6 +258,71 @@ void main() {
       expect(result.isLeft(), isTrue);
       result.fold(
         (failure) => expect(failure, isA<ServerFailure>()),
+        (_) => fail('Expected Left'),
+      );
+    });
+  });
+
+  group('getOrderPaymentStatus', () {
+    const tId = 5;
+    final tStatusModel = OrderPaymentStatusModel(
+      id: 5,
+      orderStatus: 'PENDING',
+      totalAmount: 0.5,
+      payments: [
+        PaymentTransactionModel(
+          id: 'cmu9z81di00005mohki9g8mgy',
+          status: 'PENDING',
+          provider: 'PAYMOB',
+          updatedAt: DateTime.parse('2026-09-20T15:34:00.421Z'),
+        ),
+      ],
+    );
+
+    test(
+      'returns Right(OrderPaymentStatusEntity) when remote call succeeds and online',
+      () async {
+        fakeNetworkInfo.isOnline = true;
+        fakeDataSource.paymentStatusToReturn = tStatusModel;
+
+        final result = await repository.getOrderPaymentStatus(tId);
+
+        expect(result, equals(Right(tStatusModel)));
+      },
+    );
+
+    test('returns Left(NetworkFailure) when offline', () async {
+      fakeNetworkInfo.isOnline = false;
+
+      final result = await repository.getOrderPaymentStatus(tId);
+
+      expect(result, equals(const Left(NetworkFailure())));
+    });
+
+    test('returns Left(ServerFailure) on ServerException', () async {
+      fakeNetworkInfo.isOnline = true;
+      fakeDataSource.exceptionToThrow = ServerException(
+        message: 'Payment not found',
+      );
+
+      final result = await repository.getOrderPaymentStatus(tId);
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<ServerFailure>()),
+        (_) => fail('Expected Left'),
+      );
+    });
+
+    test('returns Left(ParseFailure) on ParseException', () async {
+      fakeNetworkInfo.isOnline = true;
+      fakeDataSource.exceptionToThrow = ParseException(message: 'Bad format');
+
+      final result = await repository.getOrderPaymentStatus(tId);
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<ParseFailure>()),
         (_) => fail('Expected Left'),
       );
     });

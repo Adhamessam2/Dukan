@@ -19,6 +19,7 @@ import 'package:Dukan/features/cart/domain/usecases/get_cart_use_case.dart';
 import 'package:Dukan/features/cart/domain/usecases/update_cart_item_use_case.dart';
 import 'package:Dukan/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:Dukan/features/home/domain/entities/product_entity.dart';
+import 'package:Dukan/features/home/presentation/widgets/home_bottom_nav_bar.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_item_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
@@ -237,6 +238,14 @@ void main() {
       expect(find.byType(OrdersActivityHeader), findsOneWidget);
       expect(find.byType(OrdersSearchBar), findsOneWidget);
       expect(find.byType(OrdersFilterTabBar), findsOneWidget);
+      final navBarFinder = find.byType(HomeBottomNavBar);
+      expect(navBarFinder, findsOneWidget);
+      final navBar = tester.widget<HomeBottomNavBar>(navBarFinder);
+      expect(navBar.selectedIndex, 2);
+      expect(find.text('Browse'), findsNothing);
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Cart'), findsOneWidget);
+      expect(find.text('Orders'), findsOneWidget);
     });
 
     testWidgets('renders list of OrderCards and active shipment badge', (

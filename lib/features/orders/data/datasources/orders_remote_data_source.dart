@@ -4,12 +4,14 @@ import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/create_order_params.dart';
 import '../models/create_order_request_model.dart';
 import '../models/order_model.dart';
+import '../models/order_payment_status_model.dart';
 
 abstract class OrdersRemoteDataSource {
   Future<OrderModel> createOrder(CreateOrderParams params);
   Future<List<OrderModel>> getOrders();
   Future<OrderModel> getOrderById(int id);
   Future<OrderModel> cancelOrder(int id);
+  Future<OrderPaymentStatusModel> getOrderPaymentStatus(int id);
 }
 
 class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
@@ -92,5 +94,28 @@ class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
       );
     }
     throw ParseException(message: 'Invalid response: missing order data');
+  }
+
+  @override
+  Future<OrderPaymentStatusModel> getOrderPaymentStatus(int id) async {
+    final response = await apiConsumer.get(
+      ServerStrings.orderPaymentStatus(id),
+    );
+
+    if (response is Map && response['success'] == false) {
+      throw ServerException(
+        message:
+            response['message']?.toString() ?? 'Failed to fetch payment status',
+      );
+    }
+
+    if (response is Map && response['data'] is Map) {
+      return OrderPaymentStatusModel.fromJson(
+        Map<String, dynamic>.from(response['data'] as Map),
+      );
+    }
+    throw ParseException(
+      message: 'Invalid response: missing payment status data',
+    );
   }
 }

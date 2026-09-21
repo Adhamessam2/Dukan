@@ -50,5 +50,35 @@ void main() {
 
       expect(pressed, isTrue);
     });
+
+    testWidgets('renders custom actionLabel and actionIcon', (tester) async {
+      bool pressed = false;
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(375, 812),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: OrdersEmptyView(
+                title: 'Unable to Load Orders',
+                subtitle: 'Failed to load',
+                actionLabel: 'Try Again',
+                actionIcon: const Icon(Icons.refresh_rounded),
+                onStartShoppingPressed: () => pressed = true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Try Again'), findsOneWidget);
+      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
+      await tester.tap(find.text('Try Again'));
+      await tester.pump();
+
+      expect(pressed, isTrue);
+    });
   });
 }

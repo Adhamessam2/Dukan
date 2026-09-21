@@ -114,4 +114,45 @@ void main() {
       expect(addToCartCalled, isTrue);
     },
   );
+
+  testWidgets(
+    'disables add button when another product is being added (CartStatus.loading)',
+    (tester) async {
+      bool addToCartCalled = false;
+      fakeCartCubit.emit(
+        const CartState(status: CartStatus.loading, addingProductId: 999),
+      );
+
+      await tester.pumpWidget(
+        buildTestableWidget(
+          HomeProductCard(
+            product: inStockProduct,
+            onAddToCart: () => addToCartCalled = true,
+          ),
+        ),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      await tester.tap(find.byType(InkWell).last);
+      await tester.pump();
+
+      expect(addToCartCalled, isFalse);
+    },
+  );
+
+  testWidgets(
+    'shows CircularProgressIndicator when this product is being added',
+    (tester) async {
+      fakeCartCubit.emit(
+        const CartState(status: CartStatus.loading, addingProductId: 1),
+      );
+
+      await tester.pumpWidget(
+        buildTestableWidget(HomeProductCard(product: inStockProduct)),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
 }

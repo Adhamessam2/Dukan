@@ -32,8 +32,9 @@ void main() {
   }
 
   group('OrdersFilterTabBar', () {
-    testWidgets('renders all six tabs and badge count on All tab',
-        (tester) async {
+    testWidgets('renders all six tabs and badge count on All tab', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestWidget(
           selectedTab: OrdersFilterTab.all,
@@ -52,8 +53,9 @@ void main() {
       expect(find.text('Cancelled'), findsOneWidget);
     });
 
-    testWidgets('tapping Pending tab triggers onTabChanged callback',
-        (tester) async {
+    testWidgets('tapping Pending tab triggers onTabChanged callback', (
+      tester,
+    ) async {
       OrdersFilterTab? selected;
       await tester.pumpWidget(
         buildTestWidget(
@@ -70,8 +72,9 @@ void main() {
       expect(selected, equals(OrdersFilterTab.pending));
     });
 
-    testWidgets('tapping Delivered tab triggers onTabChanged callback',
-        (tester) async {
+    testWidgets('tapping Delivered tab triggers onTabChanged callback', (
+      tester,
+    ) async {
       OrdersFilterTab? selected;
       await tester.pumpWidget(
         buildTestWidget(
@@ -88,8 +91,9 @@ void main() {
       expect(selected, equals(OrdersFilterTab.delivered));
     });
 
-    testWidgets('tapping Cancelled tab triggers onTabChanged callback',
-        (tester) async {
+    testWidgets('tapping Cancelled tab triggers onTabChanged callback', (
+      tester,
+    ) async {
       OrdersFilterTab? selected;
       await tester.pumpWidget(
         buildTestWidget(

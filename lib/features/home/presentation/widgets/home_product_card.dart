@@ -189,12 +189,20 @@ class HomeProductCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: AppConstants.spacingXS.w),
-                BlocSelector<CartCubit, CartState, bool>(
-                  selector: (state) =>
-                      state.addingProductId == product.id &&
-                      state.status == CartStatus.loading,
-                  builder: (context, isAdding) {
-                    final bool canAddToCart = product.isInStock && !isAdding;
+                BlocSelector<
+                  CartCubit,
+                  CartState,
+                  ({bool isAddingThis, bool isAnyLoading})
+                >(
+                  selector: (state) => (
+                    isAddingThis:
+                        state.addingProductId == product.id &&
+                        state.status == CartStatus.loading,
+                    isAnyLoading: state.status == CartStatus.loading,
+                  ),
+                  builder: (context, addState) {
+                    final bool canAddToCart =
+                        product.isInStock && !addState.isAnyLoading;
 
                     return InkWell(
                       onTap: canAddToCart
@@ -220,7 +228,7 @@ class HomeProductCard extends StatelessWidget {
                               : null,
                         ),
                         child: Center(
-                          child: isAdding
+                          child: addState.isAddingThis
                               ? SizedBox(
                                   width: 16.r,
                                   height: 16.r,

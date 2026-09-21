@@ -84,4 +84,24 @@ void main() {
 
     expect(chosen, PaymentMethod.cash);
   });
+
+  testWidgets('exposes button and selection semantics for payment tiles', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestWidget(selectedMethod: PaymentMethod.cash),
+    );
+    await tester.pumpAndSettle();
+
+    final semantics = tester.widgetList<Semantics>(find.byType(Semantics));
+    final cashSemantics = semantics.firstWhere(
+      (s) => s.properties.button == true && s.properties.selected == true,
+    );
+    expect(cashSemantics, isNotNull);
+
+    final visaSemantics = semantics.firstWhere(
+      (s) => s.properties.button == true && s.properties.selected == false,
+    );
+    expect(visaSemantics, isNotNull);
+  });
 }
