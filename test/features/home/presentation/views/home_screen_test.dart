@@ -132,6 +132,7 @@ void main() {
     price: 999.0,
     avgRating: 4.8,
     category: tCategory1,
+    stockQuantity: 10,
   );
   const tProduct2 = ProductEntity(
     id: 20,
@@ -139,6 +140,7 @@ void main() {
     price: 150.0,
     avgRating: 4.2,
     category: tCategory2,
+    stockQuantity: 10,
   );
 
   setUp(() {

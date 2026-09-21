@@ -48,36 +48,67 @@ class HomeProductCard extends StatelessWidget {
                   children: [
                     Container(
                       color: colorScheme.surfaceContainerLow,
-                      child: imageUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                baseColor: colorScheme.surfaceContainer,
-                                highlightColor: colorScheme.surfaceContainerLow,
-                                child: Container(
-                                  color: colorScheme.surfaceContainer,
+                      child: Opacity(
+                        opacity: product.isInStock ? 1.0 : 0.65,
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
+                                      baseColor: colorScheme.surfaceContainer,
+                                      highlightColor:
+                                          colorScheme.surfaceContainerLow,
+                                      child: Container(
+                                        color: colorScheme.surfaceContainer,
+                                      ),
+                                    ),
+                                errorWidget: (context, url, error) => Center(
+                                  child: Icon(
+                                    Icons.image_outlined,
+                                    color: colorScheme.outlineVariant,
+                                    size: 32.r,
+                                  ),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) => Center(
+                              )
+                            : Center(
                                 child: Icon(
                                   Icons.image_outlined,
                                   color: colorScheme.outlineVariant,
                                   size: 32.r,
                                 ),
                               ),
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.image_outlined,
-                                color: colorScheme.outlineVariant,
-                                size: 32.r,
-                              ),
-                            ),
+                      ),
                     ),
 
-                    // Top-Left Badge (if rating is high or first product)
-                    if (product.avgRating >= 4.5)
+                    // Top-Left Badge: OUT OF STOCK takes precedence over rating
+                    if (!product.isInStock)
+                      Positioned(
+                        top: AppConstants.spacingSM.h,
+                        left: AppConstants.spacingSM.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppConstants.spacingSM.w,
+                            vertical: (AppConstants.spacingXS / 2).h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.error.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radiusRound,
+                            ),
+                          ),
+                          child: Text(
+                            'OUT OF STOCK',
+                            style: TextStyle(
+                              color: colorScheme.onError,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (product.avgRating >= 4.5)
                       Positioned(
                         top: 8.h,
                         left: 8.w,
@@ -145,28 +176,34 @@ class HomeProductCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '\$${product.price.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                Expanded(
+                  child: Text(
+                    '\$${product.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                SizedBox(width: AppConstants.spacingXS.w),
                 BlocSelector<CartCubit, CartState, bool>(
                   selector: (state) =>
                       state.addingProductId == product.id &&
                       state.status == CartStatus.loading,
                   builder: (context, isAdding) {
+                    final bool canAddToCart = product.isInStock && !isAdding;
+
                     return InkWell(
-                      onTap: isAdding
-                          ? null
-                          : (onAddToCart ??
+                      onTap: canAddToCart
+                          ? (onAddToCart ??
                                 () => context.read<CartCubit>().addToCart(
                                   productId: product.id,
                                   quantity: 1,
-                                )),
+                                ))
+                          : null,
                       borderRadius: BorderRadius.circular(
                         AppConstants.radiusRound,
                       ),
@@ -174,9 +211,13 @@ class HomeProductCard extends StatelessWidget {
                         width: 32.r,
                         height: 32.r,
                         decoration: BoxDecoration(
-                          color: colorScheme.primary,
+                          color: product.isInStock
+                              ? colorScheme.primary
+                              : colorScheme.surfaceContainerHighest,
                           shape: BoxShape.circle,
-                          boxShadow: AppConstants.elevationLevel2,
+                          boxShadow: product.isInStock
+                              ? AppConstants.elevationLevel2
+                              : null,
                         ),
                         child: Center(
                           child: isAdding
@@ -189,8 +230,14 @@ class HomeProductCard extends StatelessWidget {
                                   ),
                                 )
                               : Icon(
-                                  Icons.add_rounded,
-                                  color: colorScheme.onPrimary,
+                                  product.isInStock
+                                      ? Icons.add_rounded
+                                      : Icons.remove_shopping_cart_outlined,
+                                  color: product.isInStock
+                                      ? colorScheme.onPrimary
+                                      : colorScheme.onSurfaceVariant.withValues(
+                                          alpha: 0.38,
+                                        ),
                                   size: 18.r,
                                 ),
                         ),

@@ -105,6 +105,7 @@ void main() {
     price: 999.0,
     avgRating: 4.8,
     category: tCategory1,
+    stockQuantity: 10,
   );
 
   setUp(() {

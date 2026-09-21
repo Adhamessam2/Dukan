@@ -13,6 +13,12 @@ import '../../features/home/views/home_screen.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../features/product_details/presentation/cubit/product_details_cubit.dart';
 import '../../features/product_details/presentation/views/product_details_screen.dart';
+import '../../features/cart/domain/entities/cart_entity.dart';
+import '../../features/orders/presentation/cubit/checkout_cubit.dart';
+import '../../features/orders/presentation/cubit/orders_cubit.dart';
+import '../../features/orders/presentation/views/checkout_screen.dart';
+import '../../features/orders/presentation/views/orders_screen.dart';
+import '../widgets/custom_app_bar.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
@@ -59,6 +65,33 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: Routes.cart,
           builder: (context, state) => const CartScreen(),
+        ),
+        GoRoute(
+          path: Routes.checkout,
+          builder: (context, state) {
+            final cart = state.extra as CartEntity?;
+            return BlocProvider<CheckoutCubit>(
+              create: (_) => sl<CheckoutCubit>(),
+              child: CheckoutScreen(cart: cart),
+            );
+          },
+        ),
+        GoRoute(
+          path: Routes.orders,
+          builder: (context, state) => BlocProvider<OrdersCubit>(
+            create: (_) => sl<OrdersCubit>()..loadOrders(),
+            child: const OrdersScreen(),
+          ),
+        ),
+        GoRoute(
+          path: Routes.orderDetails,
+          builder: (context, state) {
+            final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+            return Scaffold(
+              appBar: CustomAppBar(title: 'Order #$id'),
+              body: Center(child: Text('Order Details for #$id')),
+            );
+          },
         ),
       ],
     ),

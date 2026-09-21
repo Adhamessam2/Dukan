@@ -155,11 +155,15 @@ class _CustomButtonState extends State<CustomButton> {
           widget.prefixIcon!,
           const SizedBox(width: AppConstants.spaceSM),
         ],
-        Text(
-          widget.text,
-          style: AppTypography.labelLg.copyWith(
-            color: foregroundColor,
-            fontWeight: FontWeight.w600,
+        Flexible(
+          child: Text(
+            widget.text,
+            style: AppTypography.labelLg.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
         if (widget.suffixIcon != null) ...[

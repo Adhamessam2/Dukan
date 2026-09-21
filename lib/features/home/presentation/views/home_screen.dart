@@ -228,6 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     onAddToCart: (product) {
+                      if (!product.isInStock) return;
                       context.read<CartCubit>().addToCart(
                         productId: product.id,
                         quantity: 1,
@@ -254,6 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
             onIndexChanged: (index) {
               if (index == 2) {
                 context.push(Routes.cart);
+              } else if (index == 3) {
+                context.push(Routes.orders);
               } else {
                 setState(() => _navIndex = index);
               }

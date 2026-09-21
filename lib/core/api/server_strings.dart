@@ -21,4 +21,9 @@ class ServerStrings {
   // Cart Endpoints
   static const String cartItem = '/cart-item';
   static const String cart = '/cart';
+
+  // Orders Endpoints
+  static const String order = '/order';
+  static String orderById(int id) => '$order/$id';
+  static String cancelOrder(int id) => '$order/$id/cancel';
 }

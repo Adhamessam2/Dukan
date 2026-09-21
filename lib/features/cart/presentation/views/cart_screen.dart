@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/routes.dart';
+import '../../../../core/theme/typography.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../home/presentation/widgets/home_bottom_nav_bar.dart';
 import '../../domain/entities/cart_entity.dart';
@@ -28,15 +29,21 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  void _handleCheckout(BuildContext context, double total) {
-    context.showSuccessSnackBar(
-      'Checkout functionality will be available in the next release.',
-    );
+  @override
+  void initState() {
+    super.initState();
+    context.read<CartCubit>().getCart();
+  }
+
+  void _handleCheckout(BuildContext context) {
+    context.push(Routes.checkout, extra: context.read<CartCubit>().state.cart);
   }
 
   void _confirmClearCart(BuildContext context) {
     final cubit = context.read<CartCubit>();
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     showDialog<bool>(
       context: context,
@@ -51,7 +58,9 @@ class _CartScreenState extends State<CartScreen> {
             onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           TextButton(
@@ -61,7 +70,7 @@ class _CartScreenState extends State<CartScreen> {
             },
             child: Text(
               'Clear all',
-              style: TextStyle(color: colorScheme.primary),
+              style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
             ),
           ),
         ],
@@ -215,7 +224,7 @@ class _CartScreenState extends State<CartScreen> {
                     final items = cart.items;
                     final cartIdStr = cart.id.toString();
                     final isLandscape =
-                        MediaQuery.of(context).orientation ==
+                        MediaQuery.orientationOf(context) ==
                         Orientation.landscape;
 
                     return isLandscape
@@ -231,7 +240,7 @@ class _CartScreenState extends State<CartScreen> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (MediaQuery.of(context).orientation != Orientation.landscape)
+          if (MediaQuery.orientationOf(context) != Orientation.landscape)
             BlocSelector<CartCubit, CartState, (bool, double)>(
               selector: (state) => (
                 state.cart != null && state.cart!.items.isNotEmpty,
@@ -242,7 +251,7 @@ class _CartScreenState extends State<CartScreen> {
                 if (!hasItems) return const SizedBox.shrink();
                 return CartStickyCheckoutBar(
                   totalPrice: totalPrice,
-                  onCheckoutPressed: () => _handleCheckout(context, totalPrice),
+                  onCheckoutPressed: () => _handleCheckout(context),
                 );
               },
             ),
@@ -347,17 +356,52 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  Widget _buildCartItem(
+    BuildContext context,
+    CartItemEntity item,
+    String cartIdStr,
+  ) {
+    final productIdStr = item.productId.toString();
+    return CartItemCard(
+      item: item,
+      onIncrement: () {
+        context.read<CartCubit>().updateCartItem(
+          cartId: cartIdStr,
+          productId: productIdStr,
+          quantity: item.quantity + 1,
+        );
+      },
+      onDecrement: () {
+        if (item.quantity > 1) {
+          context.read<CartCubit>().updateCartItem(
+            cartId: cartIdStr,
+            productId: productIdStr,
+            quantity: item.quantity - 1,
+          );
+        } else {
+          context.read<CartCubit>().deleteCartItem(
+            cartId: cartIdStr,
+            productId: productIdStr,
+          );
+        }
+      },
+      onRemove: () {
+        context.read<CartCubit>().deleteCartItem(
+          cartId: cartIdStr,
+          productId: productIdStr,
+        );
+      },
+    );
+  }
+
   Widget _buildPortraitLayout(
     BuildContext context,
     CartEntity cart,
     List<CartItemEntity> items,
     String cartIdStr,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return RefreshIndicator(
       onRefresh: () => context.read<CartCubit>().getCart(),
-      color: colorScheme.primary,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -379,41 +423,8 @@ class _CartScreenState extends State<CartScreen> {
               itemCount: items.length,
               separatorBuilder: (_, _) =>
                   SizedBox(height: AppConstants.spacingSM.h),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final productIdStr = item.productId.toString();
-
-                return CartItemCard(
-                  item: item,
-                  onIncrement: () {
-                    context.read<CartCubit>().updateCartItem(
-                      cartId: cartIdStr,
-                      productId: productIdStr,
-                      quantity: item.quantity + 1,
-                    );
-                  },
-                  onDecrement: () {
-                    if (item.quantity > 1) {
-                      context.read<CartCubit>().updateCartItem(
-                        cartId: cartIdStr,
-                        productId: productIdStr,
-                        quantity: item.quantity - 1,
-                      );
-                    } else {
-                      context.read<CartCubit>().deleteCartItem(
-                        cartId: cartIdStr,
-                        productId: productIdStr,
-                      );
-                    }
-                  },
-                  onRemove: () {
-                    context.read<CartCubit>().deleteCartItem(
-                      cartId: cartIdStr,
-                      productId: productIdStr,
-                    );
-                  },
-                );
-              },
+              itemBuilder: (context, index) =>
+                  _buildCartItem(context, items[index], cartIdStr),
             ),
           ),
 
@@ -481,41 +492,8 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: items.length,
                     separatorBuilder: (_, _) =>
                         SizedBox(height: AppConstants.spacingSM.h),
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      final productIdStr = item.productId.toString();
-
-                      return CartItemCard(
-                        item: item,
-                        onIncrement: () {
-                          context.read<CartCubit>().updateCartItem(
-                            cartId: cartIdStr,
-                            productId: productIdStr,
-                            quantity: item.quantity + 1,
-                          );
-                        },
-                        onDecrement: () {
-                          if (item.quantity > 1) {
-                            context.read<CartCubit>().updateCartItem(
-                              cartId: cartIdStr,
-                              productId: productIdStr,
-                              quantity: item.quantity - 1,
-                            );
-                          } else {
-                            context.read<CartCubit>().deleteCartItem(
-                              cartId: cartIdStr,
-                              productId: productIdStr,
-                            );
-                          }
-                        },
-                        onRemove: () {
-                          context.read<CartCubit>().deleteCartItem(
-                            cartId: cartIdStr,
-                            productId: productIdStr,
-                          );
-                        },
-                      );
-                    },
+                    itemBuilder: (context, index) =>
+                        _buildCartItem(context, items[index], cartIdStr),
                   ),
                 ),
 
@@ -535,11 +513,10 @@ class _CartScreenState extends State<CartScreen> {
           color: colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
 
-        // Right Column: Order Summary, Checkout CTA & Trust Badges (flex: 4)
+        // Right Column: Order Summary (fixed & compact), Trust Badges, and Anchored Checkout CTA (flex: 4)
         Expanded(
           flex: 4,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: AppConstants.margin.w,
               vertical: AppConstants.spacingSM.h,
@@ -547,9 +524,24 @@ class _CartScreenState extends State<CartScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CartOrderSummaryCard(totalPrice: cart.totalPrice),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        CartOrderSummaryCard(
+                          totalPrice: cart.totalPrice,
+                          isCompact: true,
+                        ),
+                        SizedBox(height: AppConstants.spacingXS.h),
+                        const CartTrustBadges(),
+                      ],
+                    ),
+                  ),
+                ),
                 SizedBox(height: AppConstants.spacingSM.h),
-                // Integrated Checkout Button
+                // Anchored Checkout Button at bottom
                 SizedBox(
                   height: AppConstants.buttonHeight.h.clamp(
                     AppConstants.searchBarHeight,
@@ -561,7 +553,7 @@ class _CartScreenState extends State<CartScreen> {
                       AppConstants.radiusMD.r,
                     ),
                     child: InkWell(
-                      onTap: () => _handleCheckout(context, cart.totalPrice),
+                      onTap: () => _handleCheckout(context),
                       borderRadius: BorderRadius.circular(
                         AppConstants.radiusMD.r,
                       ),
@@ -577,7 +569,7 @@ class _CartScreenState extends State<CartScreen> {
                                 children: [
                                   Icon(
                                     Icons.shopping_bag_outlined,
-                                    size: AppConstants.iconSizeSM.r + 2.r,
+                                    size: AppConstants.iconSizeSM.r,
                                     color: colorScheme.onPrimary,
                                   ),
                                   SizedBox(width: AppConstants.spacingSM.w),
@@ -601,11 +593,13 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 Text(
                                   '\$${cart.totalPrice.toStringAsFixed(2)}',
-                                  style: textTheme.labelLarge?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13.sp,
-                                  ),
+                                  style: textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: colorScheme.onPrimary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13.sp,
+                                      )
+                                      .withTabularFigures(),
                                 ),
                                 SizedBox(width: AppConstants.spacingXS.w),
                                 Icon(
@@ -621,7 +615,6 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                 ),
-                const CartTrustBadges(),
               ],
             ),
           ),
