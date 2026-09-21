@@ -168,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             BlocListener<CartCubit, CartState>(
               listenWhen: (previous, current) =>
+                  (ModalRoute.of(context)?.isCurrent ?? true) &&
                   previous.status != current.status,
               listener: (context, state) {
                 if (state.status == CartStatus.success) {

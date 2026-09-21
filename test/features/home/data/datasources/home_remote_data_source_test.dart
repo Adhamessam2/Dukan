@@ -7,6 +7,7 @@ import 'package:Dukan/features/home/data/datasources/home_remote_data_source.dar
 class MockApiConsumer implements ApiConsumer {
   String? calledPath;
   dynamic responseToReturn;
+  Exception? exceptionToThrow;
 
   @override
   Future<dynamic> get(
@@ -15,6 +16,7 @@ class MockApiConsumer implements ApiConsumer {
     Map<String, String>? headers,
   }) async {
     calledPath = path;
+    if (exceptionToThrow != null) throw exceptionToThrow!;
     return responseToReturn;
   }
 
@@ -144,16 +146,14 @@ void main() {
   );
 
   test(
-    'getCategoryById throws NotFoundException when statusCode is 404',
+    'getCategoryById propagates NotFoundException when ApiConsumer throws',
     () async {
       final mockApiConsumer = MockApiConsumer();
       final dataSource = HomeRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
 
-      mockApiConsumer.responseToReturn = {
-        'success': false,
-        'statusCode': 404,
-        'message': 'Category not found',
-      };
+      mockApiConsumer.exceptionToThrow = NotFoundException(
+        message: 'Category not found',
+      );
 
       expect(
         () => dataSource.getCategoryById(1),

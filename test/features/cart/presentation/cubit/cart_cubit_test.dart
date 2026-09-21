@@ -464,10 +464,14 @@ void main() {
       mockRepository.updateCartItemResult = const Right(tCartItem);
 
       final expectedStates = [
-        const CartState(updateCartItemStatus: CartStatus.loading),
+        const CartState(
+          updateCartItemStatus: CartStatus.loading,
+          pendingProductIds: {1},
+        ),
         const CartState(
           updateCartItemStatus: CartStatus.success,
           updatedCartItem: tCartItem,
+          pendingProductIds: {},
         ),
       ];
 
@@ -492,10 +496,14 @@ void main() {
       mockRepository.updateCartItemResult = const Left(tFailure);
 
       final expectedStates = [
-        const CartState(updateCartItemStatus: CartStatus.loading),
+        const CartState(
+          updateCartItemStatus: CartStatus.loading,
+          pendingProductIds: {1},
+        ),
         const CartState(
           updateCartItemStatus: CartStatus.failure,
           updateCartItemErrorMessage: 'Update failed',
+          pendingProductIds: {},
         ),
       ];
 
@@ -527,11 +535,13 @@ void main() {
           const CartState(
             updateCartItemStatus: CartStatus.loading,
             updateCartItemErrorMessage: null,
+            pendingProductIds: {1},
           ),
           const CartState(
             updateCartItemStatus: CartStatus.success,
             updatedCartItem: tCartItem,
             updateCartItemErrorMessage: null,
+            pendingProductIds: {},
           ),
         ];
 
@@ -571,10 +581,14 @@ void main() {
       mockRepository.deleteCartItemResult = const Right(tCartItem);
 
       final expectedStates = [
-        const CartState(deleteCartItemStatus: CartStatus.loading),
+        const CartState(
+          deleteCartItemStatus: CartStatus.loading,
+          pendingProductIds: {1},
+        ),
         const CartState(
           deleteCartItemStatus: CartStatus.success,
           deletedCartItem: tCartItem,
+          pendingProductIds: {},
         ),
       ];
 
@@ -598,10 +612,14 @@ void main() {
       mockRepository.deleteCartItemResult = const Left(tFailure);
 
       final expectedStates = [
-        const CartState(deleteCartItemStatus: CartStatus.loading),
+        const CartState(
+          deleteCartItemStatus: CartStatus.loading,
+          pendingProductIds: {1},
+        ),
         const CartState(
           deleteCartItemStatus: CartStatus.failure,
           deleteCartItemErrorMessage: 'Delete failed',
+          pendingProductIds: {},
         ),
       ];
 
@@ -633,11 +651,13 @@ void main() {
           const CartState(
             deleteCartItemStatus: CartStatus.loading,
             deleteCartItemErrorMessage: null,
+            pendingProductIds: {1},
           ),
           const CartState(
             deleteCartItemStatus: CartStatus.success,
             deletedCartItem: tCartItem,
             deleteCartItemErrorMessage: null,
+            pendingProductIds: {},
           ),
         ];
 

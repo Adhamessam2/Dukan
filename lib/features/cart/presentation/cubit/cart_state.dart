@@ -31,6 +31,8 @@ class CartState extends Equatable {
   final int? clearedItemCount;
   final String? clearCartErrorMessage;
 
+  final Set<int> pendingProductIds;
+
   const CartState({
     this.status = CartStatus.initial,
     this.addingProductId,
@@ -51,6 +53,7 @@ class CartState extends Equatable {
     this.clearCartStatus = CartStatus.initial,
     this.clearedItemCount,
     this.clearCartErrorMessage,
+    this.pendingProductIds = const {},
   });
 
   CartState copyWith({
@@ -84,6 +87,7 @@ class CartState extends Equatable {
     String? clearCartErrorMessage,
     bool clearClearCartErrorMessage = false,
     bool clearClearedItemCount = false,
+    Set<int>? pendingProductIds,
   }) {
     return CartState(
       status: status ?? this.status,
@@ -127,6 +131,7 @@ class CartState extends Equatable {
       clearCartErrorMessage: clearClearCartErrorMessage
           ? null
           : (clearCartErrorMessage ?? this.clearCartErrorMessage),
+      pendingProductIds: pendingProductIds ?? this.pendingProductIds,
     );
   }
 
@@ -151,5 +156,6 @@ class CartState extends Equatable {
     clearCartStatus,
     clearedItemCount,
     clearCartErrorMessage,
+    pendingProductIds,
   ];
 }

@@ -220,7 +220,7 @@ class HomeProductCard extends StatelessWidget {
                               : null,
                         ),
                         child: Center(
-                          child: isAdding
+                          child: isAddingThis
                               ? SizedBox(
                                   width: 16.r,
                                   height: 16.r,
