@@ -5,6 +5,7 @@ import 'package:Dukan/core/theme/app_theme.dart';
 import 'package:Dukan/features/home/domain/entities/product_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_item_entity.dart';
+import 'package:Dukan/features/orders/domain/entities/payment_info_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/presentation/widgets/order_card.dart';
 
@@ -52,6 +53,7 @@ void main() {
   Widget buildTestWidget(
     OrderEntity order, {
     ValueChanged<OrderEntity>? onViewDetails,
+    ValueChanged<OrderEntity>? onPayNow,
   }) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
@@ -64,6 +66,7 @@ void main() {
             child: OrderCard(
               order: order,
               onViewDetails: onViewDetails ?? (_) {},
+              onPayNow: onPayNow,
             ),
           ),
         ),
@@ -132,6 +135,37 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('3 items'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'renders Payment Pending chip and Pay Now button when creditCard order is pending',
+      (tester) async {
+        OrderEntity? payNowOrder;
+        final pendingCreditCardOrder = tOrder.copyWith(
+          paymentMethod: PaymentMethod.creditCard,
+          payment: const PaymentInfoEntity(
+            checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+            clientSecret: 'secret_123',
+          ),
+        );
+
+        await tester.pumpWidget(
+          buildTestWidget(
+            pendingCreditCardOrder,
+            onPayNow: (order) => payNowOrder = order,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Payment Pending'), findsOneWidget);
+        final payNowBtn = find.text('Pay Now');
+        expect(payNowBtn, findsOneWidget);
+
+        await tester.tap(payNowBtn);
+        await tester.pump();
+
+        expect(payNowOrder, equals(pendingCreditCardOrder));
       },
     );
   });

@@ -20,6 +20,8 @@ import '../../features/orders/presentation/views/checkout_screen.dart';
 import '../../features/orders/presentation/views/orders_screen.dart';
 import '../../features/orders/presentation/cubit/order_details_cubit.dart';
 import '../../features/orders/presentation/views/order_details_screen.dart';
+import 'package:Dukan/features/orders/presentation/views/payment_webview_args.dart';
+import 'package:Dukan/features/orders/presentation/views/payment_webview_screen.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
@@ -92,6 +94,19 @@ final GoRouter router = GoRouter(
               create: (_) => sl<OrderDetailsCubit>()..loadOrderDetails(id),
               child: OrderDetailsScreen(orderId: id),
             );
+          },
+        ),
+        GoRoute(
+          path: Routes.paymentWebView,
+          builder: (context, state) {
+            final args = state.extra as PaymentWebViewArgs?;
+            if (args == null) {
+              return BlocProvider<OrdersCubit>(
+                create: (_) => sl<OrdersCubit>()..loadOrders(),
+                child: const OrdersScreen(),
+              );
+            }
+            return PaymentWebViewScreen(args: args);
           },
         ),
       ],

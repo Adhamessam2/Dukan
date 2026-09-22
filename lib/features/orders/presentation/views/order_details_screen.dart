@@ -8,8 +8,12 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/order_payment_status_entity.dart';
+import '../../domain/entities/payment_method.dart';
 import '../cubit/order_details_cubit.dart';
 import '../cubit/order_details_state.dart';
+import 'payment_webview_args.dart';
 import '../widgets/order_delivery_address_card.dart';
 import '../widgets/order_details_bottom_bar.dart';
 import '../widgets/order_details_header.dart';
@@ -56,19 +60,51 @@ class OrderDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BlocSelector<OrderDetailsCubit, OrderDetailsState, (bool, bool)>(
+      bottomNavigationBar: BlocSelector<
+        OrderDetailsCubit,
+        OrderDetailsState,
+        (bool, bool, bool, OrderEntity?, OrderPaymentStatusEntity?)
+      >(
         selector: (state) => (
           state.status == OrderDetailsStatus.success,
           state.isReordering,
+          state.isCancelling,
+          state.order,
+          state.paymentStatus,
         ),
         builder: (context, data) {
-          final (isSuccess, isReordering) = data;
-          if (!isSuccess) {
+          final (isSuccess, isReordering, isCancelling, order, paymentStatus) =
+              data;
+          if (!isSuccess || order == null) {
             return const SizedBox.shrink();
           }
 
+          final isPendingPayment =
+              order.isPending &&
+              order.paymentMethod == PaymentMethod.creditCard &&
+              !order.isCancelled &&
+              !(paymentStatus?.isPaid ?? false);
+
           return OrderDetailsBottomBar(
             isReordering: isReordering,
+            isCancelling: isCancelling,
+            isPendingPayment: isPendingPayment,
+            totalAmount: order.totalAmount,
+            onPayNowPressed: () {
+              final checkoutUrl = order.payment?.checkoutUrl;
+              if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
+                context.push(
+                  Routes.paymentWebView,
+                  extra: PaymentWebViewArgs(url: checkoutUrl, order: order),
+                );
+              } else {
+                context.showErrorSnackBar(
+                  'Payment link is not available. Please try again later.',
+                );
+              }
+            },
+            onCancelOrderPressed: () =>
+                _showCancelOrderDialog(context, order),
             onReorderAllPressed: () async {
               final cubit = context.read<OrderDetailsCubit>();
               final cartCubit = context.read<CartCubit>();
@@ -86,6 +122,54 @@ class OrderDetailsScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _showCancelOrderDialog(
+    BuildContext context,
+    OrderEntity order,
+  ) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cubit = context.read<OrderDetailsCubit>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancel Order?'),
+        content: Text(
+          'Are you sure you want to cancel order #DK-${order.id}? '
+          'Any held items will be returned to stock.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep Order'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Cancel Order'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final success = await cubit.cancelOrder(order.id);
+      if (context.mounted) {
+        if (success) {
+          context.showSnackBar('Order #DK-${order.id} was cancelled.');
+        } else {
+          final error = cubit.state.errorMessage;
+          context.showErrorSnackBar(
+            error ?? 'Failed to cancel order. Please try again.',
+          );
+        }
+      }
+    }
   }
 
   Widget _buildLoadingView() {

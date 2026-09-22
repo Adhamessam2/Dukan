@@ -17,6 +17,7 @@ import '../widgets/checkout_sticky_bottom_bar.dart';
 import '../widgets/order_success_dialog.dart';
 import '../widgets/payment_method_card.dart';
 import '../widgets/shipping_information_card.dart';
+import 'payment_webview_args.dart';
 
 /// CheckoutScreen coordinates shipping address entry, order review, payment selection,
 /// and order submission adhering to Clean Architecture and AGENTS.md design tokens.
@@ -96,21 +97,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 context.read<CartCubit>().clearCart();
               } catch (_) {}
 
-              showDialog<void>(
-                context: context,
-                barrierDismissible: false,
-                builder: (dialogCtx) => OrderSuccessDialog(
-                  order: state.createdOrder!,
-                  onContinueShopping: () {
-                    Navigator.of(dialogCtx).pop();
-                    context.go(Routes.home);
-                  },
-                  onTrackOrders: () {
-                    Navigator.of(dialogCtx).pop();
-                    context.go(Routes.orders);
-                  },
-                ),
-              );
+              final createdOrder = state.createdOrder!;
+              final checkoutUrl = createdOrder.payment?.checkoutUrl;
+
+              if (createdOrder.paymentMethod == PaymentMethod.creditCard &&
+                  checkoutUrl != null &&
+                  checkoutUrl.isNotEmpty) {
+                context.pushReplacement(
+                  Routes.paymentWebView,
+                  extra: PaymentWebViewArgs(
+                    url: checkoutUrl,
+                    order: createdOrder,
+                  ),
+                );
+              } else {
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogCtx) => OrderSuccessDialog(
+                    order: createdOrder,
+                    onContinueShopping: () {
+                      Navigator.of(dialogCtx).pop();
+                      context.go(Routes.home);
+                    },
+                    onTrackOrders: () {
+                      Navigator.of(dialogCtx).pop();
+                      context.go(Routes.orders);
+                    },
+                  ),
+                );
+              }
             },
           ),
         ],

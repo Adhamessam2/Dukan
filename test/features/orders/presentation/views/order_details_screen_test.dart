@@ -22,9 +22,11 @@ import 'package:Dukan/features/home/domain/entities/product_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_item_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_payment_status_entity.dart';
+import 'package:Dukan/features/orders/domain/entities/payment_info_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_transaction_entity.dart';
 import 'package:Dukan/features/orders/domain/repositories/orders_repository.dart';
+import 'package:Dukan/features/orders/domain/usecases/cancel_order_use_case.dart';
 import 'package:Dukan/features/orders/domain/usecases/get_order_by_id_use_case.dart';
 import 'package:Dukan/features/orders/domain/usecases/get_order_payment_status_use_case.dart';
 import 'package:Dukan/features/orders/presentation/cubit/order_details_cubit.dart';
@@ -60,6 +62,20 @@ class MockGetOrderPaymentStatusUseCase implements GetOrderPaymentStatusUseCase {
 
   @override
   Future<Either<Failure, OrderPaymentStatusEntity>> call(int id) async {
+    capturedId = id;
+    return resultToReturn!;
+  }
+}
+
+class MockCancelOrderUseCase implements CancelOrderUseCase {
+  Either<Failure, OrderEntity>? resultToReturn;
+  int? capturedId;
+
+  @override
+  OrdersRepository get repository => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, OrderEntity>> call(int id) async {
     capturedId = id;
     return resultToReturn!;
   }
@@ -113,6 +129,7 @@ class MockCartRepository implements CartRepository {
 void main() {
   late MockGetOrderByIdUseCase mockGetOrderByIdUseCase;
   late MockGetOrderPaymentStatusUseCase mockGetOrderPaymentStatusUseCase;
+  late MockCancelOrderUseCase mockCancelOrderUseCase;
   late MockCartRepository mockCartRepository;
   late OrderDetailsCubit orderDetailsCubit;
   late CartCubit cartCubit;
@@ -169,11 +186,13 @@ void main() {
   setUp(() {
     mockGetOrderByIdUseCase = MockGetOrderByIdUseCase();
     mockGetOrderPaymentStatusUseCase = MockGetOrderPaymentStatusUseCase();
+    mockCancelOrderUseCase = MockCancelOrderUseCase();
     mockCartRepository = MockCartRepository();
 
     orderDetailsCubit = OrderDetailsCubit(
       getOrderByIdUseCase: mockGetOrderByIdUseCase,
       getOrderPaymentStatusUseCase: mockGetOrderPaymentStatusUseCase,
+      cancelOrderUseCase: mockCancelOrderUseCase,
     );
 
     cartCubit = CartCubit(
@@ -220,6 +239,12 @@ void main() {
           path: Routes.cart,
           builder: (context, state) => const Scaffold(
             body: Center(child: Text('Cart Screen Target')),
+          ),
+        ),
+        GoRoute(
+          path: Routes.paymentWebView,
+          builder: (context, state) => const Scaffold(
+            body: Center(child: Text('Payment WebView Target')),
           ),
         ),
       ],
@@ -431,6 +456,89 @@ void main() {
         expect(find.text('Premium Wireless Headphones'), findsOneWidget);
         expect(find.text('Order Summary'), findsOneWidget);
         expect(find.text('Reorder All Items'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'renders Pay Now and Cancel Order for pending credit card order and navigates on Pay Now',
+      (tester) async {
+        final pendingOrder = tOrder.copyWith(
+          orderStatus: 'PENDING',
+          paymentMethod: PaymentMethod.creditCard,
+          payment: const PaymentInfoEntity(
+            checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+            clientSecret: 'secret_123',
+          ),
+        );
+        final pendingPaymentStatus = OrderPaymentStatusEntity(
+          id: 8740,
+          orderStatus: 'PENDING',
+          totalAmount: 249.98,
+          payments: const [],
+        );
+
+        mockGetOrderByIdUseCase.resultToReturn = Right(pendingOrder);
+        mockGetOrderPaymentStatusUseCase.resultToReturn =
+            Right(pendingPaymentStatus);
+
+        await tester.pumpWidget(buildTestWidget());
+        await orderDetailsCubit.loadOrderDetails(8740);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Pay Now • \$249.98'), findsOneWidget);
+        expect(find.text('Cancel Order'), findsOneWidget);
+        expect(find.text('Reorder All Items'), findsNothing);
+
+        await tester.tap(find.text('Pay Now • \$249.98'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Payment WebView Target'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'tapping Cancel Order shows confirmation dialog and cancels order on confirm',
+      (tester) async {
+        final pendingOrder = tOrder.copyWith(
+          orderStatus: 'PENDING',
+          paymentMethod: PaymentMethod.creditCard,
+          payment: const PaymentInfoEntity(
+            checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+            clientSecret: 'secret_123',
+          ),
+        );
+        final pendingPaymentStatus = OrderPaymentStatusEntity(
+          id: 8740,
+          orderStatus: 'PENDING',
+          totalAmount: 249.98,
+          payments: const [],
+        );
+        final cancelledOrder = pendingOrder.copyWith(orderStatus: 'CANCELLED');
+
+        mockGetOrderByIdUseCase.resultToReturn = Right(pendingOrder);
+        mockGetOrderPaymentStatusUseCase.resultToReturn =
+            Right(pendingPaymentStatus);
+        mockCancelOrderUseCase.resultToReturn = Right(cancelledOrder);
+
+        await tester.pumpWidget(buildTestWidget());
+        await orderDetailsCubit.loadOrderDetails(8740);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Cancel Order'));
+        await tester.pumpAndSettle();
+
+        // Confirmation dialog shown
+        expect(find.text('Cancel Order?'), findsOneWidget);
+        expect(find.text('Keep Order'), findsOneWidget);
+
+        // Tap confirm "Cancel Order" in dialog
+        final confirmButton = find.widgetWithText(FilledButton, 'Cancel Order');
+        expect(confirmButton, findsOneWidget);
+        await tester.tap(confirmButton);
+        await tester.pumpAndSettle();
+
+        expect(mockCancelOrderUseCase.capturedId, 8740);
+        expect(find.text('Order #DK-8740 was cancelled.'), findsOneWidget);
       },
     );
   });

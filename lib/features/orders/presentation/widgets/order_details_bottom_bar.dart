@@ -3,19 +3,30 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/utils/constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 
-/// Sticky bottom bar with "Reorder All Items" primary CTA and "Need Help with this Order?" link.
+/// Sticky bottom bar with "Reorder All Items" primary CTA and "Need Help with this Order?" link,
+/// or "Pay Now" and "Cancel Order" when payment is pending.
 /// Wrapped in RepaintBoundary and SafeArea for optimal rendering performance.
 /// Matching Figma node 1:1306.
 class OrderDetailsBottomBar extends StatelessWidget {
   final VoidCallback? onReorderAllPressed;
   final VoidCallback? onNeedHelpPressed;
+  final VoidCallback? onPayNowPressed;
+  final VoidCallback? onCancelOrderPressed;
   final bool isReordering;
+  final bool isCancelling;
+  final bool isPendingPayment;
+  final double? totalAmount;
 
   const OrderDetailsBottomBar({
     super.key,
-    required this.onReorderAllPressed,
+    this.onReorderAllPressed,
     this.onNeedHelpPressed,
+    this.onPayNowPressed,
+    this.onCancelOrderPressed,
     this.isReordering = false,
+    this.isCancelling = false,
+    this.isPendingPayment = false,
+    this.totalAmount,
   });
 
   @override
@@ -46,35 +57,77 @@ class OrderDetailsBottomBar extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Reorder All Items CTA
-                CustomButton(
-                  text: 'Reorder All Items',
-                  onPressed: onReorderAllPressed,
-                  isLoading: isReordering,
-                  prefixIcon: Icon(
-                    Icons.replay_rounded,
-                    size: AppConstants.iconSizeSM.r,
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
-                SizedBox(height: AppConstants.spacingXS.h),
-
-                // Need Help Link
-                TextButton.icon(
-                  onPressed: onNeedHelpPressed,
-                  icon: Icon(
-                    Icons.headset_mic_outlined,
-                    size: AppConstants.iconSizeSM.r,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  label: Text(
-                    'Need Help with this Order?',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                if (isPendingPayment) ...[
+                  // Pay Now Primary CTA
+                  CustomButton(
+                    text: totalAmount != null
+                        ? 'Pay Now • \$${totalAmount!.toStringAsFixed(2)}'
+                        : 'Pay Now',
+                    onPressed: onPayNowPressed,
+                    prefixIcon: Icon(
+                      Icons.lock_outline_rounded,
+                      size: AppConstants.iconSizeSM.r,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
-                ),
+                  SizedBox(height: AppConstants.spacingXS.h),
+
+                  // Cancel Order Secondary Action
+                  TextButton.icon(
+                    onPressed: isCancelling ? null : onCancelOrderPressed,
+                    icon: isCancelling
+                        ? SizedBox(
+                            width: AppConstants.iconSizeSM.r,
+                            height: AppConstants.iconSizeSM.r,
+                            child: CircularProgressIndicator(
+                              strokeWidth: AppConstants.hairlineStrokeWidth * 2,
+                              color: colorScheme.error,
+                            ),
+                          )
+                        : Icon(
+                            Icons.cancel_outlined,
+                            size: AppConstants.iconSizeSM.r,
+                            color: colorScheme.error,
+                          ),
+                    label: Text(
+                      'Cancel Order',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: colorScheme.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // Reorder All Items CTA
+                  CustomButton(
+                    text: 'Reorder All Items',
+                    onPressed: onReorderAllPressed,
+                    isLoading: isReordering,
+                    prefixIcon: Icon(
+                      Icons.replay_rounded,
+                      size: AppConstants.iconSizeSM.r,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                  SizedBox(height: AppConstants.spacingXS.h),
+
+                  // Need Help Link
+                  TextButton.icon(
+                    onPressed: onNeedHelpPressed,
+                    icon: Icon(
+                      Icons.headset_mic_outlined,
+                      size: AppConstants.iconSizeSM.r,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    label: Text(
+                      'Need Help with this Order?',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

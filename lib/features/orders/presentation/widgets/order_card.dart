@@ -4,17 +4,20 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/typography.dart';
 import '../../../../core/utils/constants.dart';
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/payment_method.dart';
 
 /// Order card displaying order reference, status chip, item thumbnails, total price,
 /// and "View Details →" CTA matching Figma node 1:1090.
 class OrderCard extends StatelessWidget {
   final OrderEntity order;
   final ValueChanged<OrderEntity> onViewDetails;
+  final ValueChanged<OrderEntity>? onPayNow;
 
   const OrderCard({
     super.key,
     required this.order,
     required this.onViewDetails,
+    this.onPayNow,
   });
 
   @override
@@ -22,6 +25,11 @@ class OrderCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+
+    final bool isPendingPayment =
+        order.isPending &&
+        order.paymentMethod == PaymentMethod.creditCard &&
+        !order.isCancelled;
 
     return Container(
       decoration: BoxDecoration(
@@ -46,14 +54,17 @@ class OrderCard extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    Text(
-                      '#DK-${order.id}',
-                      style: textTheme.titleMedium
-                          ?.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          )
-                          .withTabularFigures(),
+                    Flexible(
+                      child: Text(
+                        '#DK-${order.id}',
+                        style: textTheme.titleMedium
+                            ?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            )
+                            .withTabularFigures(),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.symmetric(
@@ -107,40 +118,51 @@ class OrderCard extends StatelessWidget {
           ),
           SizedBox(height: AppConstants.spacingSM.h),
 
-          // Footer: Total Amount & View Details CTA
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Total Amount',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 11.sp,
+          // Footer: Total Amount & Actions
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppConstants.spacingSM.w,
+                runSpacing: AppConstants.spacingSM.h,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Total Amount',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      '\$${order.totalAmount.toStringAsFixed(2)}',
-                      style: textTheme.titleLarge
-                          ?.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18.sp,
-                          )
-                          .withTabularFigures(),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: AppConstants.spacingSM.w),
-              _buildViewDetailsButton(context),
-            ],
+                      SizedBox(height: (AppConstants.spacingXS / 2).h),
+                      Text(
+                        '\$${order.totalAmount.toStringAsFixed(2)}',
+                        style: textTheme.titleMedium
+                            ?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w800,
+                            )
+                            .withTabularFigures(),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (isPendingPayment && onPayNow != null) ...[
+                        _buildPayNowButton(context),
+                        SizedBox(width: AppConstants.spacingXS.w),
+                      ],
+                      _buildViewDetailsButton(context),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -154,6 +176,10 @@ class OrderCard extends StatelessWidget {
 
     final bool isDelivered = order.isDelivered;
     final bool isCancelled = order.isCancelled;
+    final bool isPendingPayment =
+        order.isPending &&
+        order.paymentMethod == PaymentMethod.creditCard &&
+        !order.isCancelled;
 
     final Color dotColor = isDelivered
         ? AppColors.success
@@ -171,11 +197,13 @@ class OrderCard extends StatelessWidget {
         ? 'Delivered'
         : isCancelled
         ? 'Cancelled'
+        : isPendingPayment
+        ? 'Payment Pending'
         : 'In Progress';
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: (AppConstants.spacingXS + 2.0).w,
+        horizontal: AppConstants.spacingSM.w,
         vertical: (AppConstants.spacingXS / 2).h,
       ),
       decoration: BoxDecoration(
@@ -336,6 +364,44 @@ class OrderCard extends StatelessWidget {
     );
   }
 
+  Widget _buildPayNowButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Material(
+      color: colorScheme.primary,
+      borderRadius: BorderRadius.circular(AppConstants.radiusMD.r),
+      child: InkWell(
+        onTap: () => onPayNow?.call(order),
+        borderRadius: BorderRadius.circular(AppConstants.radiusMD.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppConstants.spacingSM.w,
+            vertical: AppConstants.spacingXS.h,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.lock_outline_rounded,
+                size: AppConstants.iconSizeSM.r,
+                color: colorScheme.onPrimary,
+              ),
+              SizedBox(width: (AppConstants.spacingXS / 1.5).w),
+              Text(
+                'Pay Now',
+                style: textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildViewDetailsButton(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -349,8 +415,8 @@ class OrderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusMD.r),
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: (AppConstants.spacingSM + 2.0).w,
-            vertical: (AppConstants.spacingXS + 2.0).h,
+            horizontal: AppConstants.spacingSM.w,
+            vertical: AppConstants.spacingXS.h,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -365,7 +431,7 @@ class OrderCard extends StatelessWidget {
               SizedBox(width: (AppConstants.spacingXS / 1.5).w),
               Icon(
                 Icons.arrow_forward_rounded,
-                size: AppConstants.iconSizeSM.r - 2.r,
+                size: AppConstants.iconSizeSM.r,
                 color: colorScheme.onSurface,
               ),
             ],

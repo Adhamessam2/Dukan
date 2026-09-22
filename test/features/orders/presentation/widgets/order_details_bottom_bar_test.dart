@@ -69,5 +69,69 @@ void main() {
       await tester.pump();
       expect(helpTapped, isTrue);
     });
+
+    testWidgets('renders Pay Now and Cancel Order when isPendingPayment is true', (
+      tester,
+    ) async {
+      bool payNowTapped = false;
+      bool cancelTapped = false;
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(375, 812),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              bottomNavigationBar: OrderDetailsBottomBar(
+                isPendingPayment: true,
+                totalAmount: 148.0,
+                onPayNowPressed: () => payNowTapped = true,
+                onCancelOrderPressed: () => cancelTapped = true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pay Now • \$148.00'), findsOneWidget);
+      expect(find.text('Cancel Order'), findsOneWidget);
+      expect(find.text('Reorder All Items'), findsNothing);
+
+      await tester.tap(find.text('Pay Now • \$148.00'));
+      await tester.pump();
+      expect(payNowTapped, isTrue);
+
+      await tester.tap(find.text('Cancel Order'));
+      await tester.pump();
+      expect(cancelTapped, isTrue);
+    });
+
+    testWidgets('shows loading indicator on Cancel Order when isCancelling is true', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(375, 812),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const Scaffold(
+              bottomNavigationBar: OrderDetailsBottomBar(
+                isPendingPayment: true,
+                isCancelling: true,
+                totalAmount: 148.0,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
   });
 }

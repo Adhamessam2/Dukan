@@ -17,4 +17,5 @@ class Routes {
   static String orderDetailsPath(int id) => '/order-details/$id';
   static const String productDetails = '/product-details/:id';
   static String productDetailsPath(int id) => '/product-details/$id';
+  static const String paymentWebView = '/payment-webview';
 }

@@ -17,6 +17,7 @@ import 'package:Dukan/features/orders/domain/entities/order_item_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_payment_status_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/domain/repositories/orders_repository.dart';
+import 'package:Dukan/features/orders/domain/usecases/cancel_order_use_case.dart';
 import 'package:Dukan/features/orders/domain/usecases/get_order_by_id_use_case.dart';
 import 'package:Dukan/features/orders/domain/usecases/get_order_payment_status_use_case.dart';
 import 'package:Dukan/features/orders/presentation/cubit/order_details_cubit.dart';
@@ -45,6 +46,20 @@ class MockGetOrderPaymentStatusUseCase implements GetOrderPaymentStatusUseCase {
 
   @override
   Future<Either<Failure, OrderPaymentStatusEntity>> call(int id) async {
+    capturedId = id;
+    return resultToReturn!;
+  }
+}
+
+class MockCancelOrderUseCase implements CancelOrderUseCase {
+  Either<Failure, OrderEntity>? resultToReturn;
+  int? capturedId;
+
+  @override
+  OrdersRepository get repository => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, OrderEntity>> call(int id) async {
     capturedId = id;
     return resultToReturn!;
   }
@@ -99,6 +114,7 @@ void main() {
   late OrderDetailsCubit cubit;
   late MockGetOrderByIdUseCase mockGetOrderByIdUseCase;
   late MockGetOrderPaymentStatusUseCase mockGetOrderPaymentStatusUseCase;
+  late MockCancelOrderUseCase mockCancelOrderUseCase;
   late MockCartRepository mockCartRepository;
   late CartCubit cartCubit;
 
@@ -138,6 +154,7 @@ void main() {
   setUp(() {
     mockGetOrderByIdUseCase = MockGetOrderByIdUseCase();
     mockGetOrderPaymentStatusUseCase = MockGetOrderPaymentStatusUseCase();
+    mockCancelOrderUseCase = MockCancelOrderUseCase();
     mockCartRepository = MockCartRepository();
     cartCubit = CartCubit(
       addToCartUseCase: AddToCartUseCase(mockCartRepository),
@@ -150,6 +167,7 @@ void main() {
     cubit = OrderDetailsCubit(
       getOrderByIdUseCase: mockGetOrderByIdUseCase,
       getOrderPaymentStatusUseCase: mockGetOrderPaymentStatusUseCase,
+      cancelOrderUseCase: mockCancelOrderUseCase,
     );
   });
 
@@ -304,5 +322,30 @@ void main() {
         expect(cubit.state.isReordering, isFalse);
       },
     );
+
+    test('cancelOrder succeeds, sets order, toggles isCancelling, returns true', () async {
+      final cancelledOrder = tOrder.copyWith(orderStatus: 'CANCELLED');
+      mockCancelOrderUseCase.resultToReturn = Right(cancelledOrder);
+
+      final success = await cubit.cancelOrder(8740);
+
+      expect(success, isTrue);
+      expect(mockCancelOrderUseCase.capturedId, 8740);
+      expect(cubit.state.order?.orderStatus, 'CANCELLED');
+      expect(cubit.state.isCancelling, isFalse);
+    });
+
+    test('cancelOrder fails, sets errorMessage, toggles isCancelling, returns false', () async {
+      mockCancelOrderUseCase.resultToReturn = const Left(
+        ServerFailure(message: 'Failed to cancel order'),
+      );
+
+      final success = await cubit.cancelOrder(8740);
+
+      expect(success, isFalse);
+      expect(mockCancelOrderUseCase.capturedId, 8740);
+      expect(cubit.state.errorMessage, 'Failed to cancel order');
+      expect(cubit.state.isCancelling, isFalse);
+    });
   });
 }

@@ -18,5 +18,6 @@ void main() {
     expect(routePaths.contains(Routes.login), isTrue);
     expect(routePaths.contains(Routes.register), isTrue);
     expect(routePaths.contains(Routes.home), isTrue);
+    expect(routePaths.contains(Routes.paymentWebView), isTrue);
   });
 }

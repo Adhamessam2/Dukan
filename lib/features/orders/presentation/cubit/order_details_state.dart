@@ -10,6 +10,7 @@ class OrderDetailsState extends Equatable {
   final OrderPaymentStatusEntity? paymentStatus;
   final String? errorMessage;
   final bool isReordering;
+  final bool isCancelling;
 
   const OrderDetailsState({
     this.status = OrderDetailsStatus.initial,
@@ -17,6 +18,7 @@ class OrderDetailsState extends Equatable {
     this.paymentStatus,
     this.errorMessage,
     this.isReordering = false,
+    this.isCancelling = false,
   });
 
   OrderDetailsState copyWith({
@@ -26,6 +28,7 @@ class OrderDetailsState extends Equatable {
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? isReordering,
+    bool? isCancelling,
   }) {
     return OrderDetailsState(
       status: status ?? this.status,
@@ -35,6 +38,7 @@ class OrderDetailsState extends Equatable {
           ? null
           : (errorMessage ?? this.errorMessage),
       isReordering: isReordering ?? this.isReordering,
+      isCancelling: isCancelling ?? this.isCancelling,
     );
   }
 
@@ -45,5 +49,6 @@ class OrderDetailsState extends Equatable {
     paymentStatus,
     errorMessage,
     isReordering,
+    isCancelling,
   ];
 }

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Dukan/core/errors/failure.dart';
+import 'package:Dukan/core/routes/routes.dart';
 import 'package:Dukan/core/theme/app_theme.dart';
 import 'package:Dukan/core/usecases/usecase.dart';
 import 'package:Dukan/core/utils/constants.dart';
@@ -22,6 +23,7 @@ import 'package:Dukan/features/home/domain/entities/product_entity.dart';
 import 'package:Dukan/features/home/presentation/widgets/home_bottom_nav_bar.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/order_item_entity.dart';
+import 'package:Dukan/features/orders/domain/entities/payment_info_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/domain/repositories/orders_repository.dart';
 import 'package:Dukan/features/orders/domain/usecases/cancel_order_use_case.dart';
@@ -200,6 +202,11 @@ void main() {
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text('Order Details'))),
             ),
+            GoRoute(
+              path: Routes.paymentWebView,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Payment WebView Target'))),
+            ),
           ],
         );
 
@@ -367,6 +374,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Order Details'), findsOneWidget);
+    });
+
+    testWidgets('tapping Pay Now navigates to payment webview when url is present', (
+      tester,
+    ) async {
+      setupPortrait(tester);
+
+      final pendingCardOrder = tOrderPending.copyWith(
+        paymentMethod: PaymentMethod.creditCard,
+        payment: const PaymentInfoEntity(
+          checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+          clientSecret: 'secret_123',
+        ),
+      );
+
+      ordersCubit.emit(
+        OrdersState(status: OrdersStatus.success, orders: [pendingCardOrder]),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      final payNowFinder = find.text('Pay Now');
+      expect(payNowFinder, findsOneWidget);
+      await tester.tap(payNowFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Payment WebView Target'), findsOneWidget);
     });
   });
 

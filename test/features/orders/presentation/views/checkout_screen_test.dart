@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:go_router/go_router.dart';
 import 'package:Dukan/core/errors/failure.dart';
+import 'package:Dukan/core/routes/routes.dart';
 import 'package:Dukan/core/theme/app_theme.dart';
 import 'package:Dukan/core/utils/constants.dart';
 import 'package:Dukan/core/widgets/custom_app_bar.dart';
@@ -20,12 +22,14 @@ import 'package:Dukan/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:Dukan/features/home/domain/entities/product_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/create_order_params.dart';
 import 'package:Dukan/features/orders/domain/entities/order_entity.dart';
+import 'package:Dukan/features/orders/domain/entities/payment_info_entity.dart';
 import 'package:Dukan/features/orders/domain/entities/payment_method.dart';
 import 'package:Dukan/features/orders/domain/repositories/orders_repository.dart';
 import 'package:Dukan/features/orders/domain/usecases/create_order_use_case.dart';
 import 'package:Dukan/features/orders/presentation/cubit/checkout_cubit.dart';
 import 'package:Dukan/features/orders/presentation/cubit/checkout_state.dart';
 import 'package:Dukan/features/orders/presentation/views/checkout_screen.dart';
+import 'package:Dukan/features/orders/presentation/views/payment_webview_args.dart';
 import 'package:Dukan/features/orders/presentation/widgets/checkout_order_summary_card.dart';
 import 'package:Dukan/features/orders/presentation/widgets/checkout_step_indicator.dart';
 import 'package:Dukan/features/orders/presentation/widgets/checkout_sticky_bottom_bar.dart';
@@ -158,7 +162,43 @@ void main() {
     addTearDown(() => tester.view.resetPhysicalSize());
   }
 
-  Widget buildTestWidget({CartEntity? cart}) {
+  Widget buildTestWidget({CartEntity? cart, GoRouter? customRouter}) {
+    final effectiveRouter = customRouter ??
+        GoRouter(
+          initialLocation: Routes.checkout,
+          routes: [
+            GoRoute(
+              path: Routes.checkout,
+              builder: (context, state) => CheckoutScreen(cart: cart ?? tCart),
+            ),
+            GoRoute(
+              path: Routes.home,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Home Screen Target'))),
+            ),
+            GoRoute(
+              path: Routes.orders,
+              builder: (context, state) =>
+                  const Scaffold(body: Center(child: Text('Orders Screen Target'))),
+            ),
+            GoRoute(
+              path: Routes.paymentWebView,
+              builder: (context, state) {
+                final args = state.extra as PaymentWebViewArgs;
+                return Scaffold(
+                  body: Column(
+                    children: [
+                      const Text('Payment WebView Screen'),
+                      Text('URL: ${args.url}'),
+                      Text('Order ID: ${args.order.id}'),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+
     return OrientationBuilder(
       builder: (context, orientation) {
         return ScreenUtilInit(
@@ -167,14 +207,14 @@ void main() {
               : AppConstants.designSizePortrait,
           minTextAdapt: true,
           splitScreenMode: true,
-          builder: (context, child) => MaterialApp(
-            theme: AppTheme.lightTheme,
-            home: MultiBlocProvider(
-              providers: [
-                BlocProvider<CheckoutCubit>.value(value: checkoutCubit),
-                BlocProvider<CartCubit>.value(value: cartCubit),
-              ],
-              child: CheckoutScreen(cart: cart ?? tCart),
+          builder: (context, child) => MultiBlocProvider(
+            providers: [
+              BlocProvider<CheckoutCubit>.value(value: checkoutCubit),
+              BlocProvider<CartCubit>.value(value: cartCubit),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.lightTheme,
+              routerConfig: effectiveRouter,
             ),
           ),
         );
@@ -299,43 +339,132 @@ void main() {
       },
     );
 
-    testWidgets('success listener triggers dialog and clears cart', (
-      tester,
-    ) async {
-      setupPortrait(tester);
+    testWidgets(
+      'order with cash payment displays OrderSuccessDialog and clears cart',
+      (tester) async {
+        setupPortrait(tester);
 
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      final createdOrder = OrderEntity(
-        id: 777,
-        userId: 1,
-        shippingCity: 'Alexandria',
-        shippingStreet: 'Corniche',
-        shippingBuilding: '12',
-        orderStatus: 'PENDING',
-        totalAmount: 101.0,
-        paymentMethod: PaymentMethod.cash,
-        createdAt: DateTime(2026, 9, 21),
-      );
+        final createdOrder = OrderEntity(
+          id: 777,
+          userId: 1,
+          shippingCity: 'Alexandria',
+          shippingStreet: 'Corniche',
+          shippingBuilding: '12',
+          orderStatus: 'PENDING',
+          totalAmount: 101.0,
+          paymentMethod: PaymentMethod.cash,
+          createdAt: DateTime(2026, 9, 21),
+        );
 
-      // Trigger success state
-      checkoutCubit.emit(
-        CheckoutState(
-          status: CheckoutStatus.success,
-          createdOrder: createdOrder,
-        ),
-      );
-      await tester.pumpAndSettle();
+        // Trigger success state
+        checkoutCubit.emit(
+          CheckoutState(
+            status: CheckoutStatus.success,
+            createdOrder: createdOrder,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Verify cart clear was called
-      expect(mockCartRepository.clearCartCalled, isTrue);
+        // Verify cart clear was called
+        expect(mockCartRepository.clearCartCalled, isTrue);
 
-      // Verify OrderSuccessDialog is shown
-      expect(find.byType(OrderSuccessDialog), findsOneWidget);
-      expect(find.text('Order Placed Successfully!'), findsOneWidget);
-      expect(find.text('#777'), findsOneWidget);
-    });
+        // Verify OrderSuccessDialog is shown
+        expect(find.byType(OrderSuccessDialog), findsOneWidget);
+        expect(find.text('Order Placed Successfully!'), findsOneWidget);
+        expect(find.text('#777'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'order with creditCard and checkoutUrl pushes to paymentWebView route with PaymentWebViewArgs',
+      (tester) async {
+        setupPortrait(tester);
+
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        final createdOrder = OrderEntity(
+          id: 888,
+          userId: 1,
+          shippingCity: 'Cairo',
+          shippingStreet: 'Tahrir',
+          shippingBuilding: '10',
+          orderStatus: 'PENDING',
+          totalAmount: 101.0,
+          paymentMethod: PaymentMethod.creditCard,
+          payment: const PaymentInfoEntity(
+            checkoutUrl: 'https://checkout.stripe.com/pay/cs_test_123',
+            clientSecret: 'secret_123',
+          ),
+          createdAt: DateTime(2026, 9, 21),
+        );
+
+        // Trigger success state
+        checkoutCubit.emit(
+          CheckoutState(
+            status: CheckoutStatus.success,
+            createdOrder: createdOrder,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify cart clear was called
+        expect(mockCartRepository.clearCartCalled, isTrue);
+
+        // Verify OrderSuccessDialog is NOT shown
+        expect(find.byType(OrderSuccessDialog), findsNothing);
+
+        // Verify navigation pushed to paymentWebView route with args
+        expect(find.text('Payment WebView Screen'), findsOneWidget);
+        expect(
+          find.text('URL: https://checkout.stripe.com/pay/cs_test_123'),
+          findsOneWidget,
+        );
+        expect(find.text('Order ID: 888'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'order with creditCard but null or empty checkoutUrl displays OrderSuccessDialog',
+      (tester) async {
+        setupPortrait(tester);
+
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        final createdOrder = OrderEntity(
+          id: 889,
+          userId: 1,
+          shippingCity: 'Cairo',
+          shippingStreet: 'Tahrir',
+          shippingBuilding: '10',
+          orderStatus: 'PENDING',
+          totalAmount: 101.0,
+          paymentMethod: PaymentMethod.creditCard,
+          payment: null,
+          createdAt: DateTime(2026, 9, 21),
+        );
+
+        checkoutCubit.emit(
+          CheckoutState(
+            status: CheckoutStatus.success,
+            createdOrder: createdOrder,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify cart clear was called
+        expect(mockCartRepository.clearCartCalled, isTrue);
+
+        // Fallback to OrderSuccessDialog
+        expect(find.byType(OrderSuccessDialog), findsOneWidget);
+        expect(find.text('#889'), findsOneWidget);
+        expect(find.text('Payment WebView Screen'), findsNothing);
+      },
+    );
 
     testWidgets('failure listener displays error snackbar', (tester) async {
       setupPortrait(tester);

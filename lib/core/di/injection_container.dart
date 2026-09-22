@@ -199,6 +199,7 @@ Future<void> init() async {
     () => OrderDetailsCubit(
       getOrderByIdUseCase: sl(),
       getOrderPaymentStatusUseCase: sl(),
+      cancelOrderUseCase: sl(),
     ),
   );
   sl.registerLazySingleton<CreateOrderUseCase>(() => CreateOrderUseCase(sl()));

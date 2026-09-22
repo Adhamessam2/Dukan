@@ -17,6 +17,7 @@ import '../widgets/orders_activity_header.dart';
 import '../widgets/orders_empty_view.dart';
 import '../widgets/orders_filter_tab_bar.dart';
 import '../widgets/orders_search_bar.dart';
+import 'payment_webview_args.dart';
 
 /// My Orders / Order History screen matching Figma node 1:1090.
 /// Displays order history with search, status filtering, active shipment counter,
@@ -26,6 +27,18 @@ class OrdersScreen extends StatelessWidget {
 
   void _onViewDetails(BuildContext context, OrderEntity order) {
     context.push(Routes.orderDetailsPath(order.id), extra: order);
+  }
+
+  void _onPayNow(BuildContext context, OrderEntity order) {
+    final checkoutUrl = order.payment?.checkoutUrl;
+    if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
+      context.push(
+        Routes.paymentWebView,
+        extra: PaymentWebViewArgs(url: checkoutUrl, order: order),
+      );
+    } else {
+      _onViewDetails(context, order);
+    }
   }
 
   @override
@@ -261,6 +274,7 @@ class OrdersScreen extends StatelessWidget {
                     return OrderCard(
                       order: order,
                       onViewDetails: (order) => _onViewDetails(context, order),
+                      onPayNow: (order) => _onPayNow(context, order),
                     );
                   },
                   separatorBuilder: (context, index) =>
@@ -410,6 +424,7 @@ class OrdersScreen extends StatelessWidget {
                             order: order,
                             onViewDetails: (order) =>
                                 _onViewDetails(context, order),
+                            onPayNow: (order) => _onPayNow(context, order),
                           );
                         },
                         separatorBuilder: (context, index) =>

@@ -430,10 +430,7 @@ class _CartScreenState extends State<CartScreen> {
             state.deleteCartItemStatus == CartStatus.loading) {
           return;
         }
-        context.read<CartCubit>().deleteCartItem(
-          cartId: cartIdStr,
-          productId: productIdStr,
-        );
+        _handleRemoveItem(item: item, cartIdStr: cartIdStr);
       },
     );
   }

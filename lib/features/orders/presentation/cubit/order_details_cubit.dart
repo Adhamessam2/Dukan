@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/order_payment_status_entity.dart';
+import '../../domain/usecases/cancel_order_use_case.dart';
 import '../../domain/usecases/get_order_by_id_use_case.dart';
 import '../../domain/usecases/get_order_payment_status_use_case.dart';
 import 'order_details_state.dart';
@@ -9,10 +10,12 @@ import 'order_details_state.dart';
 class OrderDetailsCubit extends Cubit<OrderDetailsState> {
   final GetOrderByIdUseCase getOrderByIdUseCase;
   final GetOrderPaymentStatusUseCase getOrderPaymentStatusUseCase;
+  final CancelOrderUseCase cancelOrderUseCase;
 
   OrderDetailsCubit({
     required this.getOrderByIdUseCase,
     required this.getOrderPaymentStatusUseCase,
+    required this.cancelOrderUseCase,
   }) : super(const OrderDetailsState());
 
   Future<void> loadOrderDetails(int orderId) async {
@@ -64,6 +67,7 @@ class OrderDetailsCubit extends Cubit<OrderDetailsState> {
     emit(state.copyWith(isReordering: true));
 
     for (final item in order.items) {
+      if (isClosed) return;
       await cartCubit.addToCart(
         productId: item.product.id,
         quantity: item.quantity,
@@ -73,5 +77,32 @@ class OrderDetailsCubit extends Cubit<OrderDetailsState> {
     if (isClosed) return;
 
     emit(state.copyWith(isReordering: false));
+  }
+
+  Future<bool> cancelOrder(int orderId) async {
+    emit(state.copyWith(isCancelling: true, clearErrorMessage: true));
+    final result = await cancelOrderUseCase(orderId);
+    if (isClosed) return false;
+
+    return result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            isCancelling: false,
+            errorMessage: failure.message,
+          ),
+        );
+        return false;
+      },
+      (cancelledOrder) {
+        emit(
+          state.copyWith(
+            isCancelling: false,
+            order: cancelledOrder,
+          ),
+        );
+        return true;
+      },
+    );
   }
 }
