@@ -49,11 +49,19 @@ class ApiInterceptor extends Interceptor {
 }
 
 /// Authentication Interceptor
-/// Automatically adds authentication token to requests
+/// Automatically adds authentication token to requests and refreshes expired tokens on 401.
 class AuthInterceptor extends Interceptor {
   final Future<String?> Function() getToken;
+  final Future<String?> Function()? refreshToken;
+  final Future<void> Function()? onSessionExpired;
+  final Dio? dio;
 
-  AuthInterceptor({required this.getToken});
+  AuthInterceptor({
+    required this.getToken,
+    this.refreshToken,
+    this.onSessionExpired,
+    this.dio,
+  });
 
   @override
   void onRequest(
@@ -65,5 +73,32 @@ class AuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer $token';
     }
     super.onRequest(options, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 401 &&
+        refreshToken != null &&
+        dio != null) {
+      final path = err.requestOptions.path;
+      // Do not attempt refresh on auth or refresh endpoints to avoid infinite loops
+      if (!path.contains('/auth/sign-in') &&
+          !path.contains('/auth/sign-up') &&
+          !path.contains('/auth/refresh')) {
+        try {
+          final newToken = await refreshToken!();
+          if (newToken != null && newToken.isNotEmpty) {
+            final options = err.requestOptions;
+            options.headers['Authorization'] = 'Bearer $newToken';
+            final retryResponse = await dio!.fetch(options);
+            return handler.resolve(retryResponse);
+          }
+        } catch (_) {
+          await onSessionExpired?.call();
+        }
+      }
+    }
+
+    super.onError(err, handler);
   }
 }

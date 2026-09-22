@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/routes/routes.dart';
 import '../../core/theme/colors.dart';
 import '../../core/config/app_config.dart';
+import '../../core/di/injection_container.dart';
+import '../../core/cache/secure_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,9 +44,12 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNext() {
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+      final isAuthenticated =
+          await sl<SecureStorageService>().hasActiveSession();
       if (mounted) {
-        context.go(Routes.login);
+        context.go(isAuthenticated ? Routes.home : Routes.login);
       }
     });
   }

@@ -106,4 +106,27 @@ void main() {
       expect(result.success, true);
     },
   );
+
+  test(
+    'login parses camelCase accessToken correctly from backend response',
+    () async {
+      final mockApiConsumer = MockApiConsumer();
+      final dataSource = AuthRemoteDataSourceImpl(apiConsumer: mockApiConsumer);
+
+      final requestModel = LoginRequestModel.fromEntity(
+        const LoginParams(email: 'user@example.com', password: 'password123'),
+      );
+
+      mockApiConsumer.responseToReturn = {
+        'success': true,
+        'statusCode': 200,
+        'data': {'accessToken': 'jwt_camel_case_token_123'},
+      };
+
+      final result = await dataSource.login(requestModel);
+
+      expect(result.accessToken, 'jwt_camel_case_token_123');
+      expect(result.success, true);
+    },
+  );
 }
