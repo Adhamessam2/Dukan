@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:go_router/go_router.dart';
 import 'package:Dukan/core/errors/failure.dart';
 import 'package:Dukan/core/theme/app_theme.dart';
 import 'package:Dukan/core/usecases/usecase.dart';
@@ -136,6 +137,7 @@ void main() {
     price: 999.0,
     avgRating: 4.8,
     category: tCategory1,
+    stockQuantity: 10,
   );
   const tProduct2 = ProductEntity(
     id: 20,
@@ -143,6 +145,7 @@ void main() {
     price: 150.0,
     avgRating: 4.2,
     category: tCategory2,
+    stockQuantity: 10,
   );
 
   setUp(() {
@@ -175,20 +178,38 @@ void main() {
   });
 
   Widget buildTestWidget() {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider<HomeCubit>.value(value: cubit),
+              BlocProvider<CartCubit>.value(value: cartCubit),
+            ],
+            child: const HomeScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/cart',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Cart Screen')),
+        ),
+        GoRoute(
+          path: '/orders',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Orders Screen')),
+        ),
+      ],
+    );
+
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (context, child) => MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider<HomeCubit>.value(value: cubit),
-            BlocProvider<CartCubit>.value(value: cartCubit),
-          ],
-          child: const HomeScreen(),
-        ),
-      ),
+      builder: (context, child) =>
+          MaterialApp.router(theme: AppTheme.lightTheme, routerConfig: router),
     );
   }
 
@@ -451,8 +472,11 @@ void main() {
     await cubit.loadHomeData();
     await tester.pumpAndSettle();
 
-    expect(find.text('Browse'), findsOneWidget);
-    await tester.tap(find.text('Browse'));
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Cart'), findsOneWidget);
+    expect(find.text('Orders'), findsOneWidget);
+    expect(find.text('Browse'), findsNothing);
+    await tester.tap(find.text('Orders'));
     await tester.pumpAndSettle();
   });
 

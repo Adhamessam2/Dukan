@@ -41,6 +41,17 @@ import '../../features/cart/domain/usecases/get_cart_item_use_case.dart';
 import '../../features/cart/domain/usecases/get_cart_use_case.dart';
 import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
+import '../../features/orders/data/datasources/orders_remote_data_source.dart';
+import '../../features/orders/data/repositories/orders_repository_impl.dart';
+import '../../features/orders/domain/repositories/orders_repository.dart';
+import '../../features/orders/domain/usecases/create_order_use_case.dart';
+import '../../features/orders/domain/usecases/get_orders_use_case.dart';
+import '../../features/orders/domain/usecases/get_order_by_id_use_case.dart';
+import '../../features/orders/domain/usecases/get_order_payment_status_use_case.dart';
+import '../../features/orders/domain/usecases/cancel_order_use_case.dart';
+import '../../features/orders/presentation/cubit/checkout_cubit.dart';
+import '../../features/orders/presentation/cubit/order_details_cubit.dart';
+import '../../features/orders/presentation/cubit/orders_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -175,5 +186,35 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<CartRemoteDataSource>(
     () => CartRemoteDataSourceImpl(apiConsumer: sl()),
+  );
+
+  //! Features - Orders
+  sl.registerFactory<CheckoutCubit>(
+    () => CheckoutCubit(createOrderUseCase: sl()),
+  );
+  sl.registerFactory<OrdersCubit>(
+    () => OrdersCubit(getOrdersUseCase: sl(), cancelOrderUseCase: sl()),
+  );
+  sl.registerFactory<OrderDetailsCubit>(
+    () => OrderDetailsCubit(
+      getOrderByIdUseCase: sl(),
+      getOrderPaymentStatusUseCase: sl(),
+      cancelOrderUseCase: sl(),
+    ),
+  );
+  sl.registerLazySingleton<CreateOrderUseCase>(() => CreateOrderUseCase(sl()));
+  sl.registerLazySingleton<GetOrdersUseCase>(() => GetOrdersUseCase(sl()));
+  sl.registerLazySingleton<GetOrderByIdUseCase>(
+    () => GetOrderByIdUseCase(sl()),
+  );
+  sl.registerLazySingleton<GetOrderPaymentStatusUseCase>(
+    () => GetOrderPaymentStatusUseCase(sl()),
+  );
+  sl.registerLazySingleton<CancelOrderUseCase>(() => CancelOrderUseCase(sl()));
+  sl.registerLazySingleton<OrdersRepository>(
+    () => OrdersRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
+  sl.registerLazySingleton<OrdersRemoteDataSource>(
+    () => OrdersRemoteDataSourceImpl(apiConsumer: sl()),
   );
 }

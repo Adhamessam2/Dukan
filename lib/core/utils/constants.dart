@@ -66,6 +66,8 @@ class AppConstants {
   // DESIGN SYSTEM: COMPONENT SIZING & STROKES
   // ==========================================
   static const double headerHeight = 64.0;
+  static const double minHeaderHeight = 56.0;
+  static const double maxHeaderHeight = 72.0;
   static const double bottomNavBarHeight = 64.0;
   static const double searchBarHeight = 44.0;
   static const double buttonHeight = 52.0;
@@ -78,6 +80,7 @@ class AppConstants {
   static const double cartImageWidth = 80.0;
   static const double cartImageHeight = 96.0;
   static const double stepperButtonSize = 24.0;
+  static const double indicatorDotSize = 6.0;
 
   // ==========================================
   // DESIGN SYSTEM: ELEVATION SHADOWS
