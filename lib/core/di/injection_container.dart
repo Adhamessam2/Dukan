@@ -10,6 +10,8 @@ import '../api/api_interceptors.dart';
 import '../api/api_consumer.dart';
 import '../api/dio_consumer.dart';
 import '../api/server_strings.dart';
+import '../routes/app_router.dart';
+import '../routes/routes.dart';
 import '../cache/cache.dart';
 import '../cache/secure_storage.dart';
 import '../config/app_config.dart';
@@ -125,6 +127,7 @@ Future<void> init() async {
         },
         onSessionExpired: () async {
           await sl<SecureStorageService>().clearSession();
+          router.go(Routes.login);
         },
       ),
     );

@@ -77,7 +77,10 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    final isAlreadyRetried = err.requestOptions.extra['authRetry'] == true;
+
     if (err.response?.statusCode == 401 &&
+        !isAlreadyRetried &&
         refreshToken != null &&
         dio != null) {
       final path = err.requestOptions.path;
@@ -90,11 +93,19 @@ class AuthInterceptor extends Interceptor {
           if (newToken != null && newToken.isNotEmpty) {
             final options = err.requestOptions;
             options.headers['Authorization'] = 'Bearer $newToken';
+            options.extra['authRetry'] = true;
             final retryResponse = await dio!.fetch(options);
             return handler.resolve(retryResponse);
           }
+        } on DioException catch (refreshErr) {
+          // If the refresh request itself is explicitly rejected with 401/403, credentials are invalid/revoked
+          final refreshStatus = refreshErr.response?.statusCode;
+          if (refreshStatus == 401 || refreshStatus == 403) {
+            await onSessionExpired?.call();
+          }
+          // For timeouts/network connection errors (transientFailure), do NOT clear session.
         } catch (_) {
-          await onSessionExpired?.call();
+          // Keep tokenless / other exceptions without wiping session automatically
         }
       }
     }
