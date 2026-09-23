@@ -19,7 +19,9 @@ class LoginResponseModel extends Equatable {
       success: json['success'] as bool? ?? false,
       statusCode: json['statusCode'] as int? ?? 200,
       accessToken:
+          data?['accessToken'] as String? ??
           data?['access_token'] as String? ??
+          json['accessToken'] as String? ??
           json['access_token'] as String? ??
           '',
       message: data?['message'] as String? ?? json['message'] as String?,

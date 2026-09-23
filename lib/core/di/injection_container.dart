@@ -9,6 +9,9 @@ import '../utils/constants.dart';
 import '../api/api_interceptors.dart';
 import '../api/api_consumer.dart';
 import '../api/dio_consumer.dart';
+import '../api/server_strings.dart';
+import '../routes/app_router.dart';
+import '../routes/routes.dart';
 import '../cache/cache.dart';
 import '../cache/secure_storage.dart';
 import '../config/app_config.dart';
@@ -87,7 +90,45 @@ Future<void> init() async {
 
     dio.interceptors.add(
       AuthInterceptor(
+        dio: dio,
         getToken: () => sl<SecureStorageService>().getAuthToken(),
+        refreshToken: () async {
+          final refreshDio = Dio(
+            BaseOptions(
+              baseUrl: AppConfig.baseUrl,
+              connectTimeout: AppConstants.connectionTimeout,
+              receiveTimeout: AppConstants.receiveTimeout,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+            ),
+          );
+          final response = await refreshDio.get(ServerStrings.refreshToken);
+          final data = response.data;
+          String? newAccessToken;
+          if (data is Map<String, dynamic>) {
+            final innerData = data['data'];
+            if (innerData is Map<String, dynamic>) {
+              newAccessToken =
+                  innerData['accessToken'] as String? ??
+                  innerData['access_token'] as String?;
+            } else {
+              newAccessToken =
+                  data['accessToken'] as String? ??
+                  data['access_token'] as String?;
+            }
+          }
+          if (newAccessToken != null && newAccessToken.isNotEmpty) {
+            await sl<SecureStorageService>().saveAuthToken(newAccessToken);
+            return newAccessToken;
+          }
+          return null;
+        },
+        onSessionExpired: () async {
+          await sl<SecureStorageService>().clearSession();
+          router.go(Routes.login);
+        },
       ),
     );
 

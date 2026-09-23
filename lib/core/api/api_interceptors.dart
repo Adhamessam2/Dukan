@@ -49,11 +49,19 @@ class ApiInterceptor extends Interceptor {
 }
 
 /// Authentication Interceptor
-/// Automatically adds authentication token to requests
+/// Automatically adds authentication token to requests and refreshes expired tokens on 401.
 class AuthInterceptor extends Interceptor {
   final Future<String?> Function() getToken;
+  final Future<String?> Function()? refreshToken;
+  final Future<void> Function()? onSessionExpired;
+  final Dio? dio;
 
-  AuthInterceptor({required this.getToken});
+  AuthInterceptor({
+    required this.getToken,
+    this.refreshToken,
+    this.onSessionExpired,
+    this.dio,
+  });
 
   @override
   void onRequest(
@@ -65,5 +73,43 @@ class AuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer $token';
     }
     super.onRequest(options, handler);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    final isAlreadyRetried = err.requestOptions.extra['authRetry'] == true;
+
+    if (err.response?.statusCode == 401 &&
+        !isAlreadyRetried &&
+        refreshToken != null &&
+        dio != null) {
+      final path = err.requestOptions.path;
+      // Do not attempt refresh on auth or refresh endpoints to avoid infinite loops
+      if (!path.contains('/auth/sign-in') &&
+          !path.contains('/auth/sign-up') &&
+          !path.contains('/auth/refresh')) {
+        try {
+          final newToken = await refreshToken!();
+          if (newToken != null && newToken.isNotEmpty) {
+            final options = err.requestOptions;
+            options.headers['Authorization'] = 'Bearer $newToken';
+            options.extra['authRetry'] = true;
+            final retryResponse = await dio!.fetch(options);
+            return handler.resolve(retryResponse);
+          }
+        } on DioException catch (refreshErr) {
+          // If the refresh request itself is explicitly rejected with 401/403, credentials are invalid/revoked
+          final refreshStatus = refreshErr.response?.statusCode;
+          if (refreshStatus == 401 || refreshStatus == 403) {
+            await onSessionExpired?.call();
+          }
+          // For timeouts/network connection errors (transientFailure), do NOT clear session.
+        } catch (_) {
+          // Keep tokenless / other exceptions without wiping session automatically
+        }
+      }
+    }
+
+    super.onError(err, handler);
   }
 }
