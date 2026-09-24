@@ -15,8 +15,8 @@ class ProductImageEntity extends Equatable {
   final DateTime? createdAt;
 
   const ProductImageEntity({
-    required this.id,
-    required this.productId,
+    this.id = '',
+    this.productId = 0,
     required this.url,
     this.isPrimary = false,
     this.order,
