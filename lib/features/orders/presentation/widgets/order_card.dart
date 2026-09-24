@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/colors.dart';
@@ -344,10 +345,14 @@ class OrderCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: imageUrl != null && imageUrl.isNotEmpty
-          ? Image.network(
-              imageUrl,
+          ? CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _buildFallbackThumbnail(context),
+              memCacheWidth: (AppConstants.avatarSizeLG * 2).toInt(),
+              placeholder: (_, _) => Container(
+                color: colorScheme.surfaceContainerLow,
+              ),
+              errorWidget: (_, _, _) => _buildFallbackThumbnail(context),
             )
           : _buildFallbackThumbnail(context),
     );

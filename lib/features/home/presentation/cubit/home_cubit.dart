@@ -28,6 +28,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> _fetchCategories() async {
     final result = await getCategoriesUseCase(const NoParams());
+    if (isClosed) return;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -46,6 +47,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> _fetchProducts() async {
     final result = await getProductsUseCase(const NoParams());
+    if (isClosed) return;
     result.fold(
       (failure) => emit(
         state.copyWith(

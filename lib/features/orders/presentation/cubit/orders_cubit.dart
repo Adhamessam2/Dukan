@@ -16,6 +16,7 @@ class OrdersCubit extends Cubit<OrdersState> {
   Future<void> loadOrders() async {
     emit(state.copyWith(status: OrdersStatus.loading, clearErrorMessage: true));
     final result = await getOrdersUseCase(const NoParams());
+    if (isClosed) return;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -38,6 +39,7 @@ class OrdersCubit extends Cubit<OrdersState> {
 
   Future<void> cancelOrder(int orderId) async {
     final result = await cancelOrderUseCase(orderId);
+    if (isClosed) return;
     result.fold(
       (failure) => emit(state.copyWith(errorMessage: failure.message)),
       (updatedOrder) {

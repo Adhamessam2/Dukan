@@ -38,14 +38,14 @@ class HomeSpotlightBanner extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 6.r,
-                  height: 6.r,
+                  width: AppConstants.indicatorDotSize.r,
+                  height: AppConstants.indicatorDotSize.r,
                   decoration: BoxDecoration(
                     color: colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: AppConstants.spacingSM.w),
                 Text(
                   'SEASONAL EDIT',
                   style: TextStyle(
@@ -91,7 +91,10 @@ class HomeSpotlightBanner extends StatelessWidget {
               onTap: onExploreTap,
               borderRadius: BorderRadius.circular(AppConstants.radiusRound),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppConstants.margin.w,
+                  vertical: AppConstants.spacingSM.h,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(AppConstants.radiusRound),

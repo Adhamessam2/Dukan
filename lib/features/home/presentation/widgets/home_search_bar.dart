@@ -1,19 +1,47 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/utils/constants.dart';
 
 /// Search input bar with voice search and filter button
-class HomeSearchBar extends StatelessWidget {
+class HomeSearchBar extends StatefulWidget {
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onVoiceSearchTap;
   final VoidCallback? onFilterTap;
+  final Duration debounceDuration;
 
   const HomeSearchBar({
     super.key,
     this.onSearchChanged,
     this.onVoiceSearchTap,
     this.onFilterTap,
+    this.debounceDuration = const Duration(milliseconds: 250),
   });
+
+  @override
+  State<HomeSearchBar> createState() => _HomeSearchBarState();
+}
+
+class _HomeSearchBarState extends State<HomeSearchBar> {
+  Timer? _debounceTimer;
+
+  void _handleChanged(String text) {
+    if (widget.onSearchChanged == null) return;
+    if (widget.debounceDuration == Duration.zero) {
+      widget.onSearchChanged!(text);
+      return;
+    }
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(widget.debounceDuration, () {
+      widget.onSearchChanged!(text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +79,7 @@ class HomeSearchBar extends StatelessWidget {
                   SizedBox(width: AppConstants.spacingSM.w),
                   Expanded(
                     child: TextField(
-                      onChanged: onSearchChanged,
+                      onChanged: _handleChanged,
                       decoration: InputDecoration(
                         hintText: 'Search ceramics, apparel, goods...',
                         hintStyle: textTheme.bodyMedium?.copyWith(
@@ -72,7 +100,7 @@ class HomeSearchBar extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: onVoiceSearchTap,
+                    onPressed: widget.onVoiceSearchTap,
                     icon: Icon(
                       Icons.mic_none_rounded,
                       color: colorScheme.secondary,
@@ -89,7 +117,7 @@ class HomeSearchBar extends StatelessWidget {
 
           // Filter Button
           InkWell(
-            onTap: onFilterTap,
+            onTap: widget.onFilterTap,
             borderRadius: BorderRadius.circular(AppConstants.radiusRound),
             child: Container(
               width: searchBarHeight,

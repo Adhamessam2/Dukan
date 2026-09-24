@@ -216,7 +216,8 @@ class ProductDetailsScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(AppConstants.spacingLG.r),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

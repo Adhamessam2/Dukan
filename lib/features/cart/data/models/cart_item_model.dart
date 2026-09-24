@@ -13,9 +13,9 @@ class CartItemModel extends CartItemEntity {
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
-      cartId: json[ApiKeys.cartId] as int?,
-      productId: json[ApiKeys.productId] as int? ?? 0,
-      quantity: json[ApiKeys.quantity] as int? ?? 1,
+      cartId: (json[ApiKeys.cartId] as num?)?.toInt(),
+      productId: (json[ApiKeys.productId] as num?)?.toInt() ?? 0,
+      quantity: (json[ApiKeys.quantity] as num?)?.toInt() ?? 1,
       isDeleted: json[ApiKeys.isDeleted] as bool? ?? false,
       product: json[ApiKeys.product] is Map
           ? ProductModel.fromJson(Map<String, dynamic>.from(json[ApiKeys.product] as Map))

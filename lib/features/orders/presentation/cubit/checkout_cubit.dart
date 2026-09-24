@@ -39,6 +39,7 @@ class CheckoutCubit extends Cubit<CheckoutState> {
     );
 
     final result = await createOrderUseCase(params);
+    if (isClosed) return;
 
     result.fold(
       (failure) => emit(

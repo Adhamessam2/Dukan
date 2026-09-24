@@ -41,6 +41,9 @@ class HomeProductsGrid extends StatelessWidget {
           return _buildEmptyView(colorScheme);
         }
 
+        final isLandscape =
+            MediaQuery.orientationOf(context) == Orientation.landscape;
+
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: AppConstants.margin.w),
           child: GridView.builder(
@@ -48,9 +51,9 @@ class HomeProductsGrid extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: products.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12.h,
-              crossAxisSpacing: 12.w,
+              crossAxisCount: isLandscape ? 4 : 2,
+              mainAxisSpacing: AppConstants.gutter.h,
+              crossAxisSpacing: AppConstants.gutter.w,
               childAspectRatio: 0.65,
             ),
             itemBuilder: (context, index) {
@@ -79,8 +82,8 @@ class HomeProductsGrid extends StatelessWidget {
           itemCount: 4,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: 12.h,
-            crossAxisSpacing: 12.w,
+            mainAxisSpacing: AppConstants.gutter.h,
+            crossAxisSpacing: AppConstants.gutter.w,
             childAspectRatio: 0.65,
           ),
           itemBuilder: (context, index) => Container(
@@ -107,7 +110,7 @@ class HomeProductsGrid extends StatelessWidget {
             Icon(
               Icons.error_outline_rounded,
               color: colorScheme.error,
-              size: 40.r,
+              size: AppConstants.avatarSizeMD.r,
             ),
             SizedBox(height: AppConstants.spacingSM.h),
             Text(
@@ -129,14 +132,14 @@ class HomeProductsGrid extends StatelessWidget {
 
   Widget _buildEmptyView(ColorScheme colorScheme) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 40.h),
+      padding: EdgeInsets.symmetric(vertical: AppConstants.spacingXL.h),
       child: Center(
         child: Column(
           children: [
             Icon(
               Icons.inventory_2_outlined,
               color: colorScheme.outlineVariant,
-              size: 48.r,
+              size: AppConstants.avatarSizeLG.r,
             ),
             SizedBox(height: AppConstants.spacingSM.h),
             Text(
