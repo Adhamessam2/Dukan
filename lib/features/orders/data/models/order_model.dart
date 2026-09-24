@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/payment_method.dart';
 import 'order_item_model.dart';
@@ -22,32 +23,32 @@ class OrderModel extends OrderEntity {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final createdAt =
-        DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+        DateTime.tryParse(json[ApiKeys.createdAt]?.toString() ?? '') ??
         DateTime.fromMillisecondsSinceEpoch(0);
     final updatedAt =
-        DateTime.tryParse(json['updatedAt']?.toString() ?? '') ?? createdAt;
+        DateTime.tryParse(json[ApiKeys.updatedAt]?.toString() ?? '') ?? createdAt;
 
     return OrderModel(
-      id: _parseInt(json['id']),
-      userId: _parseInt(json['userId']),
-      shippingAddressId: _parseNullableInt(json['shippingAddressId']),
-      shippingCity: json['shippingCity']?.toString() ?? '',
-      shippingStreet: json['shippingStreet']?.toString() ?? '',
-      shippingBuilding: json['shippingBuilding']?.toString() ?? '',
-      orderStatus: json['orderStatus']?.toString() ?? '',
-      totalAmount: _parseDouble(json['totalAmount']),
+      id: _parseInt(json[ApiKeys.id]),
+      userId: _parseInt(json[ApiKeys.userId]),
+      shippingAddressId: _parseNullableInt(json[ApiKeys.shippingAddressId]),
+      shippingCity: json[ApiKeys.shippingCity]?.toString() ?? '',
+      shippingStreet: json[ApiKeys.shippingStreet]?.toString() ?? '',
+      shippingBuilding: json[ApiKeys.shippingBuilding]?.toString() ?? '',
+      orderStatus: json[ApiKeys.orderStatus]?.toString() ?? '',
+      totalAmount: _parseDouble(json[ApiKeys.totalAmount]),
       paymentMethod: PaymentMethod.fromString(
-        json['paymentMethod']?.toString() ?? '',
+        json[ApiKeys.paymentMethod]?.toString() ?? '',
       ),
       createdAt: createdAt,
       updatedAt: updatedAt,
-      payment: json['payment'] is Map
+      payment: json[ApiKeys.payment] is Map
           ? PaymentInfoModel.fromJson(
-              Map<String, dynamic>.from(json['payment'] as Map),
+              Map<String, dynamic>.from(json[ApiKeys.payment] as Map),
             )
           : null,
       items:
-          (json['items'] as List<dynamic>?)
+          (json[ApiKeys.items] as List<dynamic>?)
               ?.whereType<Map>()
               .map(
                 (item) =>

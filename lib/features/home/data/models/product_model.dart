@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/entities/product_image_entity.dart';
 import 'category_model.dart';
@@ -20,29 +21,29 @@ class ProductModel extends ProductEntity {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     int stockQuantity = 0;
-    if (json['stock'] is Map) {
+    if (json[ApiKeys.stock] is Map) {
       stockQuantity =
-          ((json['stock'] as Map)['quantity'] as num?)?.toInt() ?? 0;
-    } else if (json['stock'] is num) {
-      stockQuantity = (json['stock'] as num).toInt();
+          ((json[ApiKeys.stock] as Map)[ApiKeys.stockQuantity] as num?)?.toInt() ?? 0;
+    } else if (json[ApiKeys.stock] is num) {
+      stockQuantity = (json[ApiKeys.stock] as num).toInt();
     }
 
     return ProductModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      productName: (json['productName'] as String?)?.trim() ?? '',
-      productDescription: json['productDescription'] as String?,
-      sku: json['sku'] as String?,
+      id: (json[ApiKeys.id] as num?)?.toInt() ?? 0,
+      productName: (json[ApiKeys.productName] as String?)?.trim() ?? '',
+      productDescription: json[ApiKeys.productDescription] as String?,
+      sku: json[ApiKeys.sku] as String?,
       stockQuantity: stockQuantity,
-      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
-      avgRating: double.tryParse(json['avgRating']?.toString() ?? '0') ?? 0.0,
-      totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
-      category: json['category'] is Map
+      price: double.tryParse(json[ApiKeys.price]?.toString() ?? '0') ?? 0.0,
+      avgRating: double.tryParse(json[ApiKeys.avgRating]?.toString() ?? '0') ?? 0.0,
+      totalReviews: (json[ApiKeys.totalReviews] as num?)?.toInt() ?? 0,
+      category: json[ApiKeys.category] is Map
           ? CategoryModel.fromJson(
-              Map<String, dynamic>.from(json['category'] as Map),
+              Map<String, dynamic>.from(json[ApiKeys.category] as Map),
             )
           : null,
       productImages: List<ProductImageEntity>.unmodifiable(
-        (json['productImages'] as List<dynamic>?)
+        (json[ApiKeys.productImages] as List<dynamic>?)
                 ?.whereType<Map>()
                 .map(
                   (img) => ProductImageModel.fromJson(

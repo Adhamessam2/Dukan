@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/payment_transaction_entity.dart';
 
 class PaymentTransactionModel extends PaymentTransactionEntity {
@@ -9,11 +10,11 @@ class PaymentTransactionModel extends PaymentTransactionEntity {
   });
 
   factory PaymentTransactionModel.fromJson(Map<String, dynamic> json) {
-    final parsedDate = DateTime.tryParse(json['updatedAt']?.toString() ?? '');
+    final parsedDate = DateTime.tryParse(json[ApiKeys.updatedAt]?.toString() ?? '');
     return PaymentTransactionModel(
-      id: json['id']?.toString() ?? '',
-      status: json['status']?.toString() ?? '',
-      provider: json['provider']?.toString() ?? '',
+      id: json[ApiKeys.id]?.toString() ?? '',
+      status: json[ApiKeys.status]?.toString() ?? '',
+      provider: json[ApiKeys.provider]?.toString() ?? '',
       updatedAt:
           parsedDate?.toUtc() ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
@@ -22,10 +23,10 @@ class PaymentTransactionModel extends PaymentTransactionEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'status': status,
-      'provider': provider,
-      'updatedAt': updatedAt.toIso8601String(),
+      ApiKeys.id: id,
+      ApiKeys.status: status,
+      ApiKeys.provider: provider,
+      ApiKeys.updatedAt: updatedAt.toIso8601String(),
     };
   }
 }

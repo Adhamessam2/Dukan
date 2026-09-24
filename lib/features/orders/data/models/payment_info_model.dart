@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/payment_info_entity.dart';
 
 class PaymentInfoModel extends PaymentInfoEntity {
@@ -8,12 +9,15 @@ class PaymentInfoModel extends PaymentInfoEntity {
 
   factory PaymentInfoModel.fromJson(Map<String, dynamic> json) {
     return PaymentInfoModel(
-      checkoutUrl: json['checkoutUrl'] as String? ?? '',
-      clientSecret: json['clientSecret'] as String? ?? '',
+      checkoutUrl: json[ApiKeys.checkoutUrl] as String? ?? '',
+      clientSecret: json[ApiKeys.clientSecret] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'checkoutUrl': checkoutUrl, 'clientSecret': clientSecret};
+    return {
+      ApiKeys.checkoutUrl: checkoutUrl,
+      ApiKeys.clientSecret: clientSecret,
+    };
   }
 }

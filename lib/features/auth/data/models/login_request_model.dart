@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/login_params.dart';
 
 class LoginRequestModel extends LoginParams {
@@ -8,6 +9,6 @@ class LoginRequestModel extends LoginParams {
   }
 
   Map<String, dynamic> toJson() {
-    return {'email': email, 'password': password};
+    return {ApiKeys.email: email, ApiKeys.password: password};
   }
 }
