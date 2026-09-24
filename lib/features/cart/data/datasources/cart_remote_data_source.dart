@@ -114,6 +114,6 @@ class CartRemoteDataSourceImpl implements CartRemoteDataSource {
   Future<int> clearCart() async {
     final response = await apiConsumer.delete(ServerStrings.cart);
 
-    return response['data']['count'] as int;
+    return (response['data']['count'] as num).toInt();
   }
 }

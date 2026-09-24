@@ -44,15 +44,22 @@ class OrderDetailsScreen extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 680),
-              child: BlocSelector<OrderDetailsCubit, OrderDetailsState, OrderDetailsStatus>(
-                selector: (state) => state.status,
-                builder: (context, status) {
+              child: BlocSelector<
+                OrderDetailsCubit,
+                OrderDetailsState,
+                (OrderDetailsStatus, OrderEntity?, OrderPaymentStatusEntity?)
+              >(
+                selector: (state) =>
+                    (state.status, state.order, state.paymentStatus),
+                builder: (context, data) {
+                  final (status, order, paymentStatus) = data;
                   return switch (status) {
                     OrderDetailsStatus.initial ||
                     OrderDetailsStatus.loading =>
                       _buildLoadingView(),
                     OrderDetailsStatus.failure => _buildErrorView(context),
-                    OrderDetailsStatus.success => _buildSuccessView(context),
+                    OrderDetailsStatus.success =>
+                      _buildSuccessView(context, order, paymentStatus),
                   };
                 },
               ),
@@ -224,15 +231,14 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSuccessView(BuildContext context) {
-    final cubit = context.read<OrderDetailsCubit>();
-    final order = cubit.state.order;
-
+  Widget _buildSuccessView(
+    BuildContext context,
+    OrderEntity? order,
+    OrderPaymentStatusEntity? paymentStatus,
+  ) {
     if (order == null) {
       return const SizedBox.shrink();
     }
-
-    final paymentStatus = cubit.state.paymentStatus;
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),

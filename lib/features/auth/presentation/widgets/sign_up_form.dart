@@ -132,7 +132,7 @@ class _SignUpFormState extends State<SignUpForm> {
               fieldName: 'Username',
             ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: AppConstants.spaceMD.h),
 
           // 2. Email Address Field
           CustomTextField(
@@ -149,7 +149,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
             validator: Validators.email,
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: AppConstants.spaceMD.h),
 
           // 3. Phone Number Field with Country Badge
           CustomTextField(
@@ -191,7 +191,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
             validator: Validators.phone,
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: AppConstants.spaceMD.h),
 
           // 4. Date of Birth Field (Native DatePicker)
           CustomTextField(
@@ -204,12 +204,12 @@ class _SignUpFormState extends State<SignUpForm> {
             prefixIcon: Icon(
               Icons.calendar_today_outlined,
               color: colorScheme.secondary,
-              size: 18.w,
+              size: AppConstants.controlSize.w,
             ),
             validator: (val) =>
                 Validators.required(val, fieldName: 'Date of Birth'),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: AppConstants.spaceMD.h),
 
           // 5. Password Field
           CustomTextField(
@@ -238,7 +238,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
             validator: Validators.password,
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: AppConstants.spaceMD.h),
 
           // 6. Confirm Password Field
           CustomTextField(
