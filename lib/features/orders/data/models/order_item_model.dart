@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../../home/data/models/product_model.dart';
 import '../../domain/entities/order_item_entity.dart';
 
@@ -6,12 +7,12 @@ class OrderItemModel extends OrderItemEntity {
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
     return OrderItemModel(
-      quantity: json['quantity'] is num
-          ? (json['quantity'] as num).toInt()
-          : int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
-      product: json['product'] is Map
+      quantity: json[ApiKeys.quantity] is num
+          ? (json[ApiKeys.quantity] as num).toInt()
+          : int.tryParse(json[ApiKeys.quantity]?.toString() ?? '0') ?? 0,
+      product: json[ApiKeys.product] is Map
           ? ProductModel.fromJson(
-              Map<String, dynamic>.from(json['product'] as Map),
+              Map<String, dynamic>.from(json[ApiKeys.product] as Map),
             )
           : const ProductModel(id: 0, productName: '', price: 0.0),
     );

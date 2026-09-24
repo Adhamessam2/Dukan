@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/create_order_params.dart';
 
 class CreateOrderRequestModel {
@@ -24,12 +25,12 @@ class CreateOrderRequestModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'address': {
-        'shippingCity': shippingCity,
-        'shippingStreet': shippingStreet,
-        'shippingBuilding': shippingBuilding,
+      ApiKeys.address: {
+        ApiKeys.shippingCity: shippingCity,
+        ApiKeys.shippingStreet: shippingStreet,
+        ApiKeys.shippingBuilding: shippingBuilding,
       },
-      'paymentMethod': paymentMethod,
+      ApiKeys.paymentMethod: paymentMethod,
     };
   }
 }

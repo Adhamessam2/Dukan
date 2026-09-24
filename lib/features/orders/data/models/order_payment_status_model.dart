@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/order_payment_status_entity.dart';
 import 'payment_transaction_model.dart';
 
@@ -11,11 +12,11 @@ class OrderPaymentStatusModel extends OrderPaymentStatusEntity {
 
   factory OrderPaymentStatusModel.fromJson(Map<String, dynamic> json) {
     return OrderPaymentStatusModel(
-      id: _parseInt(json['id']),
-      orderStatus: json['orderStatus']?.toString() ?? '',
-      totalAmount: _parseDouble(json['totalAmount']),
+      id: _parseInt(json[ApiKeys.id]),
+      orderStatus: json[ApiKeys.orderStatus]?.toString() ?? '',
+      totalAmount: _parseDouble(json[ApiKeys.totalAmount]),
       payments:
-          (json['payments'] as List<dynamic>?)
+          (json[ApiKeys.payments] as List<dynamic>?)
               ?.whereType<Map>()
               .map(
                 (item) => PaymentTransactionModel.fromJson(
@@ -41,18 +42,18 @@ class OrderPaymentStatusModel extends OrderPaymentStatusEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'orderStatus': orderStatus,
-      'totalAmount': totalAmount.toString(),
-      'payments': payments
+      ApiKeys.id: id,
+      ApiKeys.orderStatus: orderStatus,
+      ApiKeys.totalAmount: totalAmount.toString(),
+      ApiKeys.payments: payments
           .map(
             (p) => p is PaymentTransactionModel
                 ? p.toJson()
                 : {
-                    'id': p.id,
-                    'status': p.status,
-                    'provider': p.provider,
-                    'updatedAt': p.updatedAt.toIso8601String(),
+                    ApiKeys.id: p.id,
+                    ApiKeys.status: p.status,
+                    ApiKeys.provider: p.provider,
+                    ApiKeys.updatedAt: p.updatedAt.toIso8601String(),
                   },
           )
           .toList(),

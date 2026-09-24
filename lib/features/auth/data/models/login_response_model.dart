@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/api/api_keys.dart';
 
 class LoginResponseModel extends Equatable {
   final bool success;
@@ -14,17 +15,17 @@ class LoginResponseModel extends Equatable {
   });
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>?;
+    final data = json[ApiKeys.data] as Map<String, dynamic>?;
     return LoginResponseModel(
-      success: json['success'] as bool? ?? false,
-      statusCode: json['statusCode'] as int? ?? 200,
+      success: json[ApiKeys.success] as bool? ?? false,
+      statusCode: json[ApiKeys.statusCode] as int? ?? 200,
       accessToken:
-          data?['accessToken'] as String? ??
-          data?['access_token'] as String? ??
-          json['accessToken'] as String? ??
-          json['access_token'] as String? ??
+          data?[ApiKeys.accessToken] as String? ??
+          data?[ApiKeys.accessTokenSnake] as String? ??
+          json[ApiKeys.accessToken] as String? ??
+          json[ApiKeys.accessTokenSnake] as String? ??
           '',
-      message: data?['message'] as String? ?? json['message'] as String?,
+      message: data?[ApiKeys.message] as String? ?? json[ApiKeys.message] as String?,
     );
   }
 

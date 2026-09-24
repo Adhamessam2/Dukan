@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/category_entity.dart';
 
 /// Data model representing a category, extending [CategoryEntity]
@@ -15,16 +16,16 @@ class CategoryModel extends CategoryEntity {
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      categoryName: (json['categoryName'] as String?)?.trim() ?? '',
-      parentId: (json['parentId'] as num?)?.toInt(),
-      parent: json['parent'] is Map
+      id: (json[ApiKeys.id] as num?)?.toInt() ?? 0,
+      categoryName: (json[ApiKeys.categoryName] as String?)?.trim() ?? '',
+      parentId: (json[ApiKeys.parentId] as num?)?.toInt(),
+      parent: json[ApiKeys.parent] is Map
           ? CategoryModel.fromJson(
-              Map<String, dynamic>.from(json['parent'] as Map),
+              Map<String, dynamic>.from(json[ApiKeys.parent] as Map),
             )
           : null,
       subCategories:
-          (json['subCategories'] as List<dynamic>?)
+          (json[ApiKeys.subCategories] as List<dynamic>?)
               ?.whereType<Map>()
               .map(
                 (subJson) =>
@@ -32,12 +33,12 @@ class CategoryModel extends CategoryEntity {
               )
               .toList() ??
           const [],
-      isDeleted: json['isDeleted'] as bool? ?? false,
-      createdAt: json['createdAt'] is String
-          ? DateTime.tryParse(json['createdAt'] as String)
+      isDeleted: json[ApiKeys.isDeleted] as bool? ?? false,
+      createdAt: json[ApiKeys.createdAt] is String
+          ? DateTime.tryParse(json[ApiKeys.createdAt] as String)
           : null,
-      updatedAt: json['updatedAt'] is String
-          ? DateTime.tryParse(json['updatedAt'] as String)
+      updatedAt: json[ApiKeys.updatedAt] is String
+          ? DateTime.tryParse(json[ApiKeys.updatedAt] as String)
           : null,
     );
   }

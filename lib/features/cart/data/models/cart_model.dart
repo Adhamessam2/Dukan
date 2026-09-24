@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/cart_entity.dart';
 import 'cart_item_model.dart';
 
@@ -10,9 +11,9 @@ class CartModel extends CartEntity {
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
     return CartModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: (json[ApiKeys.id] as num?)?.toInt() ?? 0,
       items:
-          (json['items'] as List<dynamic>?)
+          (json[ApiKeys.items] as List<dynamic>?)
               ?.whereType<Map>()
               .map(
                 (item) =>
@@ -20,7 +21,7 @@ class CartModel extends CartEntity {
               )
               .toList() ??
           const [],
-      totalPrice: double.tryParse(json['totalPrice']?.toString() ?? '0') ?? 0.0,
+      totalPrice: double.tryParse(json[ApiKeys.totalPrice]?.toString() ?? '0') ?? 0.0,
     );
   }
 }

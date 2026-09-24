@@ -1,3 +1,4 @@
+import '../../../../core/api/api_keys.dart';
 import '../../domain/entities/sign_up_params.dart';
 
 class SignUpRequestModel extends SignUpParams {
@@ -30,12 +31,12 @@ class SignUpRequestModel extends SignUpParams {
 
   Map<String, dynamic> toJson() {
     return {
-      'username': username,
-      'email': email,
-      'password': password,
-      'confirm_password': confirmPassword,
-      'birth_date': _formatDate(birthDate),
-      'phone_number': phoneNumber,
+      ApiKeys.username: username,
+      ApiKeys.email: email,
+      ApiKeys.password: password,
+      ApiKeys.confirmPassword: confirmPassword,
+      ApiKeys.birthDate: _formatDate(birthDate),
+      ApiKeys.phoneNumber: phoneNumber,
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/api/api_keys.dart';
 import 'product_model.dart';
 
 /// Response wrapper model for products endpoint
@@ -17,11 +18,11 @@ class ProductsResponseModel extends Equatable {
 
   factory ProductsResponseModel.fromJson(Map<String, dynamic> json) {
     return ProductsResponseModel(
-      success: json['success'] as bool? ?? false,
-      statusCode: (json['statusCode'] as num?)?.toInt() ?? 200,
-      message: json['message'] as String?,
+      success: json[ApiKeys.success] as bool? ?? false,
+      statusCode: (json[ApiKeys.statusCode] as num?)?.toInt() ?? 200,
+      message: json[ApiKeys.message] as String?,
       data:
-          (json['data'] as List<dynamic>?)
+          (json[ApiKeys.data] as List<dynamic>?)
               ?.whereType<Map>()
               .map(
                 (item) =>
