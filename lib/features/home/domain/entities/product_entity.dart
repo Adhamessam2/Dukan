@@ -5,6 +5,7 @@ import 'product_image_entity.dart';
 /// Domain entity representing a product
 class ProductEntity extends Equatable {
   final int id;
+  final int? categoryId;
   final String productName;
   final String? productDescription;
   final String? sku;
@@ -14,10 +15,14 @@ class ProductEntity extends Equatable {
   final int totalReviews;
   final CategoryEntity? category;
   final List<ProductImageEntity> productImages;
+  final bool isDeleted;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   const ProductEntity({
     required this.id,
     required this.productName,
+    this.categoryId,
     this.productDescription,
     this.sku,
     this.stockQuantity = 0,
@@ -26,11 +31,15 @@ class ProductEntity extends Equatable {
     this.totalReviews = 0,
     this.category,
     this.productImages = const [],
+    this.isDeleted = false,
+    this.createdAt,
+    this.updatedAt,
   });
 
   @override
   List<Object?> get props => [
     id,
+    categoryId,
     productName,
     productDescription,
     sku,
@@ -40,6 +49,9 @@ class ProductEntity extends Equatable {
     totalReviews,
     category,
     productImages,
+    isDeleted,
+    createdAt,
+    updatedAt,
   ];
 
   /// Returns the designated primary image, or the first available image
@@ -50,8 +62,8 @@ class ProductEntity extends Equatable {
     return productImages.firstOrNull;
   }
 
-  /// Returns true if stockQuantity is greater than 0
-  bool get isInStock => stockQuantity > 0;
+  /// Returns true if the product is not deleted and has available stock
+  bool get isInStock => !isDeleted && stockQuantity > 0;
 
   /// Returns the URL string of the primary image, if present
   String? get primaryImageUrl => primaryImage?.url;

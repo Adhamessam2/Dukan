@@ -44,6 +44,7 @@ class HomeState extends Equatable {
     final list = products.where((product) {
       final matchesCategory =
           selectedCategoryId == null ||
+          product.categoryId == selectedCategoryId ||
           product.category?.id == selectedCategoryId ||
           product.category?.parent?.id == selectedCategoryId ||
           product.category?.parentId == selectedCategoryId;

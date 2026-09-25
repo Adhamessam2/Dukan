@@ -28,7 +28,17 @@ abstract class ApiKeys {
   static const String birthDate = 'birth_date';
   static const String phoneNumber = 'phone_number';
 
+  // Pagination & Meta Keys
+  static const String meta = 'meta';
+  static const String page = 'page';
+  static const String limit = 'limit';
+  static const String total = 'total';
+  static const String totalPages = 'totalPages';
+  static const String hasNextPage = 'hasNextPage';
+  static const String hasPreviousPage = 'hasPreviousPage';
+
   // Product & Category Keys
+  static const String categoryId = 'categoryId';
   static const String productName = 'productName';
   static const String productDescription = 'productDescription';
   static const String sku = 'sku';
