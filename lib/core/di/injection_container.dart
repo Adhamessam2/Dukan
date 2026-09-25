@@ -14,6 +14,10 @@ import '../routes/app_router.dart';
 import '../routes/routes.dart';
 import '../cache/cache.dart';
 import '../cache/secure_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import '../config/app_config.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -75,6 +79,18 @@ Future<void> init() async {
     () => InternetConnection.createInstance(),
   );
 
+  CookieJar cookieJar;
+  try {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    cookieJar = PersistCookieJar(
+      storage: FileStorage('${appDocDir.path}/.cookies'),
+      persistSession: true,
+    );
+  } catch (_) {
+    cookieJar = CookieJar();
+  }
+  sl.registerLazySingleton<CookieJar>(() => cookieJar);
+
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
       BaseOptions(
@@ -87,6 +103,10 @@ Future<void> init() async {
         },
       ),
     );
+
+    if (!kIsWeb) {
+      dio.interceptors.add(CookieManager(sl<CookieJar>()));
+    }
 
     dio.interceptors.add(
       AuthInterceptor(
@@ -104,6 +124,9 @@ Future<void> init() async {
               },
             ),
           );
+          if (!kIsWeb) {
+            refreshDio.interceptors.add(CookieManager(sl<CookieJar>()));
+          }
           final response = await refreshDio.get(ServerStrings.refreshToken);
           final data = response.data;
           String? newAccessToken;
@@ -127,6 +150,7 @@ Future<void> init() async {
         },
         onSessionExpired: () async {
           await sl<SecureStorageService>().clearSession();
+          await sl<CookieJar>().deleteAll();
           router.go(Routes.login);
         },
       ),
